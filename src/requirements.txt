@@ -1,0 +1,13 @@
+tensorflow==2.13.0
+flask==2.3.3
+waitress==2.1.2
+jupyterlab==4.0.6
+safety==2.3.5
+detect-secrets==1.4.0
+presidio-analyzer==2.2.33
+whispers==2.1.5
+GitPython==3.1.36
+boto3==1.28.48
+tqdm==4.66.1
+flask_restx
+flask_cors
