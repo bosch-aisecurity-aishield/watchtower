@@ -175,7 +175,8 @@ In the Playground version, you will be able to scan public Github repos and view
    grant minimal read-only access.
 3. Doesn't support scanning of .pb file from s3 buckets. 
 4. Presidio analyser has 1000000 (1GB) has max length. Any data greater than 1GB will not be captured in reports.  
-5. Possible miss-match in severity levels from Whispers library and watchtower severity levels  
+5. Possible miss-match in severity levels from Whispers library and watchtower severity levels.
+6. Watchtower application is tested in Ubuntu LTS 22.04   
 
 ### Upcoming Features
 1. Reduce false positives by using these customized versions that detect vulnerabilities more accurately. 
