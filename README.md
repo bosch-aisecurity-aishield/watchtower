@@ -36,7 +36,8 @@ further enhances its market standing by providing advanced security solutions.
     - [CLI](#cli)
     - [UI](#ui)
     - [UI-Docker](#ui-docker)
-  - [Platground](#playground)
+  - [Playground](#playground)
+- [Reports](#reports)
 - [Features](#features)
 - [Benefits](#benefits)
 - [Limitation](#limitation)
@@ -104,6 +105,8 @@ To scan the artifacts present in AWS S3 bucket
 python watchtower.py --repo_type=s3 --bucket_name="<Enter Bucket name>" --region="<Enter region of s3 bucket>" --aws_access_key_id="<Enter aws access key>" --aws_secret_access_key="<Enter aws secret key>"
 ```
 
+![Watchtower CLI](./img/AIShield_watchtower_git_cli.gif)
+
 ---
 
 #### UI
@@ -115,6 +118,8 @@ python watchtower_webapp.py
 ```
 
 open browser and paste: <http://localhost:5015/watchtower-aishield>
+
+![Watchtower UI](./img/AIShield_watchtower_UI.gif)
 
 ---
 
@@ -130,7 +135,7 @@ docker-compose up
 
 open browser and paste: <http://localhost:5015/watchtower-aishield>
 
-On sucessful completion of scan, Watchtower vulnerability reports will be available in reports folder in watchtower root folder.  
+On successful completion of scan, Watchtower vulnerability reports will be available in reports folder in watchtower root folder.  
 
 For stopping and removing watchtower image execute following
 
@@ -146,7 +151,7 @@ For quick getting started, you may try Watchtower Playground by visiting <https:
 
 In the Watchtower Playground, users can scan Notebooks and AI/ML models available in public Github Repos by providing public Github Repo URL. After completion of vulnerability scan, reports will be available to download in the Playground screen.
 
-### Watchtower Reports
+## Reports
 
 On successful completion of the Watchtower scan, three reports will be generated in the following path :
 
@@ -156,7 +161,7 @@ On successful completion of the Watchtower scan, three reports will be generated
 
 - For UI-Docker Mode - all three reports will be available inside the watchtower reports folder. Users may refer to the success message on the UI to get the path of the reports location
 
-01. Summary Report - In summary report will provide information on number of model files and notebook files detected, Number of vulnerabilities detected and Count of those vulnerabilities mapped to Critical, High, Medium and low. Sample snippit of Summary Report:
+01. Summary Report - In summary report will provide information on number of model files and notebook files detected, Number of vulnerabilities detected and Count of those vulnerabilities mapped to Critical, High, Medium and low. Sample snippet of Summary Report:
 
 ```json
 {
@@ -181,7 +186,7 @@ On successful completion of the Watchtower scan, three reports will be generated
 }
 ```
 
-02. Severity Mapping Report - In this report, details of High, Medium and Low mapping to Model or Notebooks is reported. Sample snippit of Severity Mapping Report:
+02. Severity Mapping Report - In this report, details of High, Medium and Low mapping to Model or Notebooks is reported. Sample snippet of Severity Mapping Report:
 
 ```json
   {
@@ -207,7 +212,7 @@ On successful completion of the Watchtower scan, three reports will be generated
 ## Features
 
 - **Model and Notebook Detection**: Automatically recognizes AI/ML models and Notebooks within a provided repository.
-  Supported file formate is H5, pickle, saved model, .ipynb
+  Supported file format is H5, pickle, saved model, .ipynb
 - **Scanning**:Executes thorough scans of the models and notebooks to detect potential safety and security concerns.
 - **Report Generation**: Produces comprehensive reports that classify the scanned files containing "low," "medium,", "high" and "critical" risk.
 - **Supported Repositories** : AIShield Watchtower supports integration with GitHub and AWS S3 buckets, allowing for automated scanning of Git repositories and AWS S3 buckets to identify potential risks.
@@ -264,6 +269,8 @@ On successful completion of the Watchtower scan, three reports will be generated
 1. Reduce false positives by using these customized versions that detect vulnerabilities more accurately.
 2. Refine PII severity assessment with contextual rules for varied levels.
 3. Enhance model vulnerability detection by adding checks for the embedding layer's potential issues.
+4. Integration with Github actions
+5. Support for Hugging Face Repository
 
 ---
 
