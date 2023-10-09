@@ -1,6 +1,6 @@
 ![Project Banner or Logo](./img/AIShield-watchtower-final-logo.png)
 
-# [AIShield.Watchtower 🔍: Fortifying AI/ML Model and Notebook Security]()
+# AIShield.Watchtower 🔍: Fortifying AI/ML Model and Notebook Security
 
 In today's rapidly advancing landscape of machine learning and artificial intelligence (AI), ensuring the security of AI
 models has become an imperative. These models serve as the driving force behind decision-making in a myriad of
@@ -20,12 +20,12 @@ for cyber-attacks, risking not only the integrity of AI-driven products but also
 
 **AIShield Watchtower** is designed to automate model and notebook discoveries and conduct comprehensive vulnerability scan.
 Its capabilities go beyond merely identifying all the models and notebooks within your repository. Watchtower
-continuously monitors these assets for changes and perform assessments, ensuring that vulnerabilities do not go unnoticed.
+continuously monitors these assets for changes and perform assessments, ensuring that vulnerabilities do not go unnoticed. It assesses risks, such as hard-coded secrets, PIIs, outdated/unsafe libraries, model serialization attacks, custom unsafe operations etc.
 
 AIShield Watchtower stands out with its capability to categorize scans into four distinct risk levels: "low," "medium,"
 "high," and "critical." This classification equips organizations with the ability to tailor their security efforts to
 the level of risk detected. Its adaptive approach and meticulous risk categorization significantly bolster security
-efforts, fortifying them effectively. Watchtower's alignment with industry standards such as OWASP, MITRE, and CWE
+efforts, fortifying them effectively. Watchtower's alignment with industry standards such as OWASP, MITRE, CWE, NIST AI RMF MAP functions
 further enhances its market standing by providing advanced security solutions.
 
 ## Table of Contents
@@ -299,6 +299,7 @@ This project is licensed under the Apache License. See [LICENSE](LICENSE.md) for
 
 ## Acknowledgments
 
+First and foremost, we want to extend our deepest gratitude to the vibrant open-source community. The foundation of AI Watchtower by AIShield is built upon the collective wisdom, tools, and insights shared by countless contributors. It's a privilege to stand on the shoulders of these giants:
 - [Yelp's detect-secrets](https://github.com/Yelp/detect-secrets): Used for scanning configurations to prevent accidental commitment of sensitive data.
 - [Safety](https://github.com/pyupio/safety): Used for scanning python dependencies for known security vulnerabilities and suggests the proper remediation for vulnerabilities detected.
 - [Whispers](https://github.com/Skyscanner/whispers) : Identify hardcoded secrets in static structured text
@@ -324,4 +325,8 @@ This project is licensed under the Apache License. See [LICENSE](LICENSE.md) for
 - [Security in MLOps Pipeline](https://irmcon.com/blog/security-in-mlops-pipeline/)
 - [A traditional attack vector applied to AI/ML Models](https://5stars217.github.io/2023-03-30-on-malicious-models/)
 
----
+... and to many others who have contributed their knowledge on open-source licenses, API key security, MLOps pipeline security, and more.
+
+In creating AI Watchtower, it's our humble attempt to give back to this incredible community. We're inspired by the spirit of collaboration and are thrilled to contribute our grain of sand to the vast desert of open-source knowledge. Together, let's continue to make the AI landscape safer and more robust for all!
+
+
