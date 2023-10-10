@@ -19,8 +19,7 @@ inadvertently find their way into the final product. These vulnerabilities, if l
 for cyber-attacks, risking not only the integrity of AI-driven products but also the security of user data.
 
 **AIShield Watchtower** is designed to automate model and notebook discoveries and conduct comprehensive vulnerability scan.
-Its capabilities go beyond merely identifying all the models and notebooks within your repository. Watchtower
-continuously monitors these assets for changes and perform assessments, ensuring that vulnerabilities do not go unnoticed. It assesses risks, such as hard-coded secrets, PIIs, outdated/unsafe libraries, model serialization attacks, custom unsafe operations etc.
+Its capabilities go beyond merely identifying all the models and notebooks within your repository. It assesses risks, such as hard-coded secrets, PIIs, outdated/unsafe libraries, model serialization attacks, custom unsafe operations etc.
 
 AIShield Watchtower stands out with its capability to categorize scans into four distinct risk levels: "low," "medium,"
 "high," and "critical." This classification equips organizations with the ability to tailor their security efforts to
