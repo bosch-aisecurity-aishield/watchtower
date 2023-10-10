@@ -48,13 +48,13 @@ further enhances its market standing by providing advanced security solutions.
 
 AIShield Watchtower can be used to inspect vulnerabilities in Jupyter notebooks and AI/ML Models (.h5, .pkl and .pb file formats).
 
-For using AIShield Watchtower, clone Watchtower repo. Install prerequisites and scan your notebooks and AI/ML models
+For using AIShield Watchtower, clone Watchtower repo. Install prerequisites and scan your notebooks and AI/ML models. Some starting sample test files are available within the Watchtower repo.
 
 ---
 
 ### Prerequisites
 
-- For  running watchtower in CLI or UI version, python3 and pip should be installed in the host system.
+- For  running Watchtower in CLI or UI version, python3 and pip should be installed in the host system.
 - For running UI-Docker version, docker and docker-compose should be installed in the host system
 
 Cloning Watchtower repo
@@ -71,7 +71,7 @@ Once Git repositories cloned, change directory.
 cd watchtower/src
 ```
 
-Install watchtower related dependency libraries using following commands
+Install Watchtower related dependency libraries using following commands
 
 ```python
 pip install -r requirements.txt
@@ -125,7 +125,7 @@ open browser and paste: <http://localhost:5015/watchtower-aishield>
 
 #### UI-Docker
 
-For using Watchtower UI, build docker image for watchtower and run watchtower image
+For using Watchtower UI, build docker image for Watchtower and run Watchtower image
 
 ```bash
 cd watchtower
@@ -135,9 +135,9 @@ docker-compose up
 
 open browser and paste: <http://localhost:5015/watchtower-aishield>
 
-On successful completion of scan, Watchtower vulnerability reports will be available in reports folder in watchtower root folder.  
+On successful completion of scan, Watchtower vulnerability reports will be available in reports folder in Watchtower root folder.  
 
-For stopping and removing watchtower image execute following
+For stopping and removing Watchtower image execute following
 
 ```bash
 docker-compose down
@@ -155,11 +155,11 @@ In the Watchtower Playground, users can scan Notebooks and AI/ML models availabl
 
 On successful completion of the Watchtower scan, three reports will be generated in the following path :
 
-- For CLI Mode - all three reports will be available inside the watchtower src folder. Users may refer last line of the summary report in the console for the complete path of the reports location
+- For CLI Mode - all three reports will be available inside the Watchtower src folder. Users may refer last line of the summary report in the console for the complete path of the reports location
 
-- For UI Mode - all three will be reports will be available inside the watchtower src folder. Users may refer to the success message on the UI to get the path of the reports location
+- For UI Mode - all three will be reports will be available inside the Watchtower src folder. Users may refer to the success message on the UI to get the path of the reports location
 
-- For UI-Docker Mode - all three reports will be available inside the watchtower reports folder. Users may refer to the success message on the UI to get the path of the reports location
+- For UI-Docker Mode - all three reports will be available inside the Watchtower reports folder. Users may refer to the success message on the UI to get the path of the reports location
 
 01. Summary Report - In summary report will provide information on number of model files and notebook files detected, Number of vulnerabilities detected and Count of those vulnerabilities mapped to Critical, High, Medium and low. Sample snippet of Summary Report:
 
@@ -261,7 +261,7 @@ On successful completion of the Watchtower scan, three reports will be generated
    grant minimal read-only access.
 3. Doesn't support scanning of .pb file from s3 buckets.
 4. Presidio analyser has 1000000 (1GB) has max length. Any data greater than 1GB will not be captured in reports.  
-5. Possible miss-match in severity levels from Whispers library and watchtower severity levels.
+5. Possible miss-match in severity levels from Whispers library and Watchtower severity levels.
 6. Watchtower application is tested in Ubuntu LTS 22.04
 
 ### Upcoming Features
