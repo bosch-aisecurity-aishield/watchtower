@@ -1,7 +1,7 @@
 tensorflow==2.13.0
 flask==2.3.3
 waitress==2.1.2
-jupyterlab==4.0.6
+jupyterlab==4.0.11
 safety==2.3.5
 detect-secrets==1.4.0
 presidio-analyzer==2.2.33
