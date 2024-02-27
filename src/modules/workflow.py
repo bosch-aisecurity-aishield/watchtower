@@ -15,8 +15,8 @@ from modules import notebook_inspector, model_inspector
 
 def orchestrator(repo_type: str = 'github', repo_url: str = None, github_clone_dir: str = "repo_dir",
                  aws_access_key_id: str = None, aws_secret_access_key: str = None, region: str = None,
-                 bucket_name: str = None, s3_download_dir: str = 's3_downloads', scanning_id: str = None
-                 ):
+                 bucket_name: str = None, s3_download_dir: str = 's3_downloads', scanning_id: str = None,
+                 path: str=None, branch_name: str='main', depth: int=1):
     """
     This Function will work as an orchestrator to clone the given repo provided and fetch what are the files to be
     scanned by watchtower powered by AIShield , and trigger model inspector or notebook inspector according to the
@@ -45,6 +45,12 @@ def orchestrator(repo_type: str = 'github', repo_url: str = None, github_clone_d
         DESCRIPTION. The default is "s3_downloads".
     scanning_id: str
         DESCRIPTION. scanning id
+    path: str, optional
+        DESCRIPTION. The default is None.
+    branch_name: str, optional
+        DESCRIPTION. The default is "main"
+    depth: int, optional
+        DESCRIPTION. The default value is 1.
 
 
     Raises
@@ -76,7 +82,10 @@ def orchestrator(repo_type: str = 'github', repo_url: str = None, github_clone_d
                                                                     s3_download_dir=s3_download_dir,
                                                                     region=region,
                                                                     bucket_name=bucket_name,
-                                                                    scanning_id=scanning_id)
+                                                                    scanning_id=scanning_id,
+                                                                    path=path,
+                                                                    branch_name=branch_name,
+                                                                    depth=depth)
 
         # iterate to get response from each files
         for file in tqdm(to_be_scanned_files):
@@ -134,7 +143,7 @@ def orchestrator(repo_type: str = 'github', repo_url: str = None, github_clone_d
     # Clean up the local cloned directory either scanning failed or Completed
     if repo_type.lower() == "github":
         github_util.delete_github_repo(repo_path=save_dir)
-    else:
+    elif repo_type.lower() not in ["file", "folder"]:
         helper.delete_directory([save_dir])
 
     return report_path, scanning_status
