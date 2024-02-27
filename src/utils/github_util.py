@@ -42,7 +42,7 @@ def clone_github_repo(repo_url, target_dir, branch_name, depth):
         print("Error cloning git repo {}".format(str(e)))
 
 
-def delete_github_repo(repo_path):
+def delete_github_repo(repo_dir):
     
     """
     Delete a GitHub cloned repository.
@@ -55,16 +55,16 @@ def delete_github_repo(repo_path):
     """
     try:
         if repo_path:
-            if os.path.exists(repo_path):
-                for root, dirs, files in os.walk(repo_path):
+            if os.path.exists(repo_dir):
+                for root, dirs, files in os.walk(repo_dir):
                     for dir in dirs:
                         os.chmod(path.join(root, dir), stat.S_IRWXU)
                     for file in files:
                         os.chmod(path.join(root, file), stat.S_IRWXU)
-                shutil.rmtree(repo_path)
+                shutil.rmtree(repo_dir)
                 print("Locally cloned repository has been successfully removed")
         else:
             print("Invalid repo_path or directory does not exist. No need to remove.")
           
     except Exception as e:
-        print("{} Failed to remove due to {}".format(repo_path, str(e)))
+        print("{} Failed to remove due to {}".format(repo_dir, str(e)))
