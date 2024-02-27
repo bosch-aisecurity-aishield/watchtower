@@ -270,13 +270,13 @@ On successful completion of the Watchtower scan, three reports will be generated
 
 ## Limitation
 
-1. Support only for public Git repository.
+1. Support only for public Git and huggingface repository.
 2. Enable AWS S3 bucket support by configuring role-based credentials, where a specialized role is crafted to
    grant minimal read-only access.
 3. Doesn't support scanning of .pb file from s3 buckets.
 4. Presidio analyser has 1000000 (1GB) has max length. Any data greater than 1GB will not be captured in reports.  
 5. Possible miss-match in severity levels from Whispers library and Watchtower severity levels.
-6. Watchtower application is tested in Ubuntu LTS 22.04
+6. Watchtower application is tested in Ubuntu LTS 22.04.
 
 ### Upcoming Features
 
@@ -284,7 +284,7 @@ On successful completion of the Watchtower scan, three reports will be generated
 2. Refine PII severity assessment with contextual rules for varied levels.
 3. Enhance model vulnerability detection by adding checks for the embedding layer's potential issues.
 4. Integration with Github actions
-5. Support for Hugging Face Repository
+
 
 ---
 
