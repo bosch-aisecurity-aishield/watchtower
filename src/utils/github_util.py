@@ -54,14 +54,15 @@ def delete_github_repo(repo_path):
     - None
     """
     try:
-        if repo_path and os.path.exists(repo_path):
-            for root, dirs, files in os.walk(repo_path):  
-                for dir in dirs:
-                    os.chmod(path.join(root, dir), stat.S_IRWXU)
-                for file in files:
-                    os.chmod(path.join(root, file), stat.S_IRWXU)
-            shutil.rmtree(repo_path)
-            print("Locally cloned repository has been successfully removed")
+        if repo_path:
+            if os.path.exists(repo_path):
+                for root, dirs, files in os.walk(repo_path):
+                    for dir in dirs:
+                        os.chmod(path.join(root, dir), stat.S_IRWXU)
+                    for file in files:
+                        os.chmod(path.join(root, file), stat.S_IRWXU)
+                shutil.rmtree(repo_path)
+                print("Locally cloned repository has been successfully removed")
         else:
             print("Invalid repo_path or directory does not exist. No need to remove.")
           
