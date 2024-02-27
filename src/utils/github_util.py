@@ -55,9 +55,10 @@ def delete_github_repo(repo_dir):
     - None
     """
     try:
-        if not repo_dir or not os.path.exists(repo_dir):
-            print("Invalid repo directory or directory does not exist. No need to remove.")
-            return
+        # if not repo_dir:
+        #     if not os.path.exists(repo_dir):
+        #         print("Invalid repo directory or directory does not exist. No need to remove.")
+        #         return
 
         # Make sure repo_dir is an absolute path
         repo_dir = os.path.abspath(repo_dir)
