@@ -12,6 +12,7 @@ import git  # !pip install GitPython
 import stat
 import shutil
 from os import path
+
 """try:
   import git
 except:
@@ -68,12 +69,14 @@ def delete_github_repo(repo_dir):
             return
 
         # Change permissions of files and directories recursively
-        for root, dirs, files in os.walk(repo_dir):
-            for dir in dirs:
-                os.chmod(os.path.join(root, dir), stat.S_IRWXU)
-            for file in files:
-                os.chmod(os.path.join(root, file), stat.S_IRWXU)
-        shutil.rmtree(repo_dir)
+        # for root, dirs, files in os.walk(repo_dir):
+        #     for dir in dirs:
+        #         os.chmod(os.path.join(root, dir), stat.S_IRWXU)
+        #     for file in files:
+        #         os.chmod(os.path.join(root, file), stat.S_IRWXU)
+
+        shutil.rmtree(repo_dir, ignore_errors=True)
+        os.rmdir(repo_dir)
         print("Locally cloned repository has been successfully removed")
           
     except Exception as e:
