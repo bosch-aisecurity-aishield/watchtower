@@ -1,4 +1,4 @@
-![Project Banner or Logo](./img/AIShield-watchtower-final-logo.png)
+![Project Banner or Logo](./img/WatchtowerGithubImage.jpg)
 
 # AIShield.Watchtower 🔍: Fortifying AI/ML Model and Notebook Security
 
@@ -80,9 +80,9 @@ python -m spacy download en_core_web_lg
 
 ---
 
-### Inspect Jupyter Notebooks and Model Using
+### Inspect Jupyter Notebooks and ML/DL Models 
 
-Inspection of Jupyter Notebooks and model can be done by any of the three methods:
+Inspection of Jupyter Notebooks and ML/DL models can be done by any of the three methods:
 
 #### CLI
 
@@ -92,16 +92,31 @@ To View the available options in CLI mode
 python watchtower.py -h 
 ```
 
-To inspect artifacts present in Public Github Repo
+##### To inspect artifacts present in Public Github Repo
 
 ```python
-python watchtower.py --repo_type=github --repo_url=<Enter Github Repo>
+python watchtower.py --repo_type=github --repo_url=<Enter Repo Url> --branch_name=<Enter Branch Name> --depth=<Enter a number>
+```
+NOTE: branch_name and depth parameters are optional. Default value of branch_name is main and default depth value is 1
+##### To inspect artifacts present in Huggingface Repo
+
+```python
+python watchtower.py --repo_type=huggingface --repo_url=<Enter Hugging Face Url>
 ```
 
-To scan the artifacts present in AWS S3 bucket
+##### To scan the artifacts present in AWS S3 bucket
 
 ```python
 python watchtower.py --repo_type=s3 --bucket_name="<Enter Bucket name>" --region="<Enter region of s3 bucket>" --aws_access_key_id="<Enter aws access key>" --aws_secret_access_key="<Enter aws secret key>"
+```
+
+##### To scan the artifacts present in local system
+
+```python
+#Select Repo_type = file for scanning individual file
+python watchtower.py --repo_type=file --path=<Enter path of File>
+#Select Repo_type = file for scanning individual file
+python watchtower.py --repo_type=folder --path=<Enter path of Folder>
 ```
 
 ![Watchtower CLI](./img/AIShield_watchtower_git_cli.gif)
@@ -255,13 +270,13 @@ On successful completion of the Watchtower scan, three reports will be generated
 
 ## Limitation
 
-1. Support only for public Git repository.
+1. Support only for public Git and huggingface repository.
 2. Enable AWS S3 bucket support by configuring role-based credentials, where a specialized role is crafted to
    grant minimal read-only access.
 3. Doesn't support scanning of .pb file from s3 buckets.
 4. Presidio analyser has 1000000 (1GB) has max length. Any data greater than 1GB will not be captured in reports.  
 5. Possible miss-match in severity levels from Whispers library and Watchtower severity levels.
-6. Watchtower application is tested in Ubuntu LTS 22.04
+6. Watchtower application is tested in Ubuntu LTS 22.04.
 
 ### Upcoming Features
 
@@ -269,7 +284,12 @@ On successful completion of the Watchtower scan, three reports will be generated
 2. Refine PII severity assessment with contextual rules for varied levels.
 3. Enhance model vulnerability detection by adding checks for the embedding layer's potential issues.
 4. Integration with Github actions
-5. Support for Hugging Face Repository
+
+## Known Issues
+
+1. Repositories cloned from GitHub and Hugging Face during watchtower analysis will not be automatically removed
+   post-analysis. It is advisable to manually delete these folders found within the 'src' directory.
+
 
 ---
 
@@ -327,5 +347,4 @@ First and foremost, we want to extend our deepest gratitude to the vibrant open-
 ... and to many others who have contributed their knowledge on open-source licenses, API key security, MLOps pipeline security, and more.
 
 In creating AI Watchtower, it's our humble attempt to give back to this incredible community. We're inspired by the spirit of collaboration and are thrilled to contribute our grain of sand to the vast desert of open-source knowledge. Together, let's continue to make the AI landscape safer and more robust for all!
-
 

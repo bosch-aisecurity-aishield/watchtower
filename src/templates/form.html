@@ -6,7 +6,7 @@
 <style>
     @font-face {
         font-family: 'now';
-        src: url('font/Now-Regular.otf');
+        src: url('../font/Now-Regular.otf');
     }
     body {
         font-family: 'now';
@@ -43,7 +43,7 @@
         font-weight: bold;
     }
     .radio-control {
-        width: 240px;
+        width: 450px;
         display: flex;
         justify-content: space-between;
         padding-left: 150px;
@@ -60,7 +60,7 @@
         margin-right: 15px;
     }
 
-    input[type=text], input[type=email] {
+    input[type=text], input[type=email], select {
         width: calc(100% - 160px);
         padding: 12px 20px;
         margin: 10px 0;
@@ -71,7 +71,7 @@
         outline: none;
     }
 
-    input[type=text]:focus, input[type=email]:focus {
+    input[type=text]:focus, input[type=email]:focus, select:focus {
         border: 3px solid #555;
         background-color: lightblue;
     }
@@ -82,7 +82,9 @@
         padding-left: 35px;
         margin-bottom: 12px;
         cursor: pointer;
-        font-size: 22px;
+        font-size: 16px;
+        line-height: 24px;
+        font-weight: bold;
         -webkit-user-select: none;
         -moz-user-select: none;
         -ms-user-select: none;
@@ -235,6 +237,39 @@
         margin-bottom: 10px;
         margin-top: 10px
     }
+
+    #loader {
+        display: flex;
+        width: calc(100% - 15px);
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        justify-content: center;
+        align-items: center;
+        background: rgb(0 0 0 / 60%);
+    }
+
+    /* code #1 */
+    .loading01 span{
+        color: #ffffff;
+        font-size: 32px;
+        font-weight: 600;
+        animation: loading01 1.4s infinite alternate;
+        @for $i from 0 through 12 {
+            &:nth-child(#{$i+1}) {
+                animation-delay: #{$i*.1}s;
+            }
+        }
+    }
+    @keyframes loading01 {
+        0% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+        }
+    }
     
 </style>
 <body>
@@ -251,23 +286,31 @@
                 {% if messages %}
                     <ul>
                         {% for message in messages %}
-                            <li>{{ message }}</li>
+                            <li id="msg">{{ message }}</li>
                         {% endfor %}
                     </ul>
                 {% endif %}
             {% endwith %}
 
-            <form method="POST" id="myform">
+            <form method="POST" id="watchtower">
                 <div class="form-container">
 
 
                     <div class="radio-control">
                         <label>Github
-                            <input type="radio" value="github" name="github" id="github">
+                            <input type="radio" value="github" name="type" id="github" checked>
+                            <span class="checkmark"></span>
+                        </label>
+                        <label>Huggingface
+                            <input type="radio" value="huggingface" name="type" id="huggingface">
                             <span class="checkmark"></span>
                         </label>
                         <label>S3
-                            <input type="radio" value="s3" name="s3" id="s3">
+                            <input type="radio" value="s3" name="type" id="s3">
+                            <span class="checkmark"></span>
+                        </label>
+                        <label>Local
+                            <input type="radio" value="local" name="type" id="local">
                             <span class="checkmark"></span>
                         </label>
                     </div>
@@ -278,27 +321,50 @@
                     </div>
 
                     <div class="form-control">
+                        <label>Branch(Optional): </label>
+                        <input type="text" name="branch" id="branch">
+                    </div>
+
+                    <div class="form-control">
+                        <label>Depth(Optional): </label>
+                        <input type="text" name="depth" id="depth">
+                    </div>
+
+                    <div class="form-control" style="display: none;">
                         <label>S3 BUCKET NAME: </label>
                         <input type="text" name="s3_bucket_name" id="s3_url">
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control" style="display: none;">
                         <label>AWS ACCESS KEY ID: </label>
                         <input type="text" name="aws_access_key_id" id="aws_access_key_id">
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control" style="display: none;">
                         <label>AWS SECRET ACCESS KEY: </label>
                         <input type="text" name="aws_secret_access_key" id="aws_secret_access_key">
                     </div>
 
-                    <div class="form-control">
+                    <div class="form-control" style="display: none;">
                         <label>REGION: </label>
                         <input type="text" name="region" id="region">
                     </div>
 
-                    <button class="primary" type="submit">Submit</button>
-                    <button class="secondary" onclick="document.getElementById('myform').reset()" type="button">Reset</button>
+                    <div class="form-control" style="display: none;">
+                        <label>FILE TYPE </label>
+                        <select name="file_type" id="file_type">
+                            <option value="file">File</option>
+                            <option value="folder">Folder</option>
+                        </select>
+                    </div>
+
+                    <div class="form-control" style="display: none;">
+                        <label>PATH: </label>
+                        <input type="text" name="path" id="path">
+                    </div>
+
+                    <button class="primary" type="button" onclick="submitForm()">Submit</button>
+                    <button class="secondary" onclick="document.getElementById('watchtower').reset()" type="button">Reset</button>
                 </div>
                 
             </form>
@@ -306,17 +372,97 @@
         
     </div>
 
+    <div id="loader" style="display: none;">
+        <!-- <div class="loader-text">Processing...</div> -->
+        <div class="loading loading01">
+            <span>P</span>
+            <span>R</span>
+            <span>O</span>
+            <span>C</span>
+            <span>E</span>
+            <span>S</span>
+            <span>S</span>
+            <span>I</span>
+            <span>N</span>
+            <span>G</span>
+            <span>.</span>
+            <span>.</span>
+            <span>.</span>
+        </div>
+    </div>
+
     <script>
 
+        window.onload = function() {
+            var msgElement =  document.getElementById('msg');
+            if (typeof(msgElement) !== undefined && msgElement !== null)
+            {
+                document.getElementById('msg').style.width = '100%';
+                document.getElementById('msg').style.padding = '10px';
+            }
+            
+            setFormElements('github')
+        };
+
+        function submitForm() {
+            document.getElementById("loader").setAttribute('style', 'display: flex;');
+            document.getElementById("watchtower").submit();
+        }
+
+        if ( window.history.replaceState ) {
+            window.history.replaceState( null, null, window.location.href );
+        }
+
+        function setFormElements(id) {
+            document.querySelectorAll('.form-control').forEach( (x) => { x.setAttribute("style", "display: none"); } )
+            switch (id) {
+                case 'github':
+                    document.getElementById("github_url").parentElement.setAttribute("style","display: block");
+                    document.getElementById("branch").parentElement.setAttribute("style","display: block");
+                    document.getElementById("depth").parentElement.setAttribute("style","display: block");
+                    break;
+                case 'huggingface':
+                    document.getElementById("github_url").parentElement.setAttribute("style","display: block");
+                    break;
+                case 's3':
+                    document.getElementById("s3_url").parentElement.setAttribute("style","display: block");
+                    document.getElementById("aws_access_key_id").parentElement.setAttribute("style","display: block");
+                    document.getElementById("aws_secret_access_key").parentElement.setAttribute("style","display: block");
+                    document.getElementById("region").parentElement.setAttribute("style","display: block");
+                    break;
+                case 'local':
+                    document.getElementById("file_type").parentElement.setAttribute("style","display: block");
+                    document.getElementById("path").parentElement.setAttribute("style","display: block");
+                    break;
+            }
+        }
         document.body.addEventListener('change', function (e) {
             let target = e.target;
             let message;
+            var msgElement =  document.getElementById('msg');
+            if (typeof(msgElement) !== undefined && msgElement !== null)
+            {
+                document.getElementById('msg').innerHTML = '';
+                document.getElementById('msg').style.width = '0px';
+                document.getElementById('msg').style.padding = '0px';
+            }
+            
             switch (target.id) {
                 case 'github':
+                    setFormElements('github');
+                    document.getElementById("github_url").focus();
+                    break;
+                case 'huggingface':
+                    setFormElements('huggingface');
                     document.getElementById("github_url").focus();
                     break;
                 case 's3':
-                document.getElementById("s3_url").focus();
+                    setFormElements('s3');
+                    document.getElementById("s3_url").focus();
+                    break;
+                case 'local':
+                    setFormElements('local');
+                    document.getElementById("file_type").focus();
                     break;
             }
         });

@@ -1,3 +1,4 @@
 *.ini
 *.pyc
 src/scanned_reports.txt
+.scannerwork/

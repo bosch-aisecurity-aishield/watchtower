@@ -20,7 +20,8 @@ app.secret_key = 'watchtower'
 
 
 # Define a function to simulate processing and scanning
-def trigger_workflow(repo_type, repo_url, s3_bucket_name, aws_secret_access_key, aws_access_key_id, region):
+def trigger_workflow(repo_type, repo_url, s3_bucket_name, aws_secret_access_key, aws_access_key_id, region,
+                     branch_name, depth, path):
     """
     Description: This function simulates the processing and scanning of a repository based on the provided parameters.
 
@@ -31,6 +32,9 @@ def trigger_workflow(repo_type, repo_url, s3_bucket_name, aws_secret_access_key,
         - aws_access_key_id (str): aws access key id value in str
         - aws_secret_access_key (str): aws secret access key value in str
         - region (str): region where the bucket is present
+        - branch_name (str): The branch_name of the GitHub repository to analyze. Defaults is "main" branch.
+        - depth (int): Upto which commit want to clone github
+        - path (str): The path of the file/folder to analyze.
 
     Returns:
         - report_path (str) : The path to the scanning report generated during the scanning process.
@@ -42,7 +46,7 @@ def trigger_workflow(repo_type, repo_url, s3_bucket_name, aws_secret_access_key,
 
     # Generate a unique scanning ID based on the current timestamp
     scanning_id = str(int(datetime.datetime.now().timestamp()))
-
+    
     # Call the watchtower.orchestrator function to perform the scanning
     report_path, scanning_status = workflow.orchestrator(repo_type=repo_type,
                                                          repo_url=repo_url,
@@ -50,6 +54,9 @@ def trigger_workflow(repo_type, repo_url, s3_bucket_name, aws_secret_access_key,
                                                          aws_access_key_id=aws_access_key_id,
                                                          aws_secret_access_key=aws_secret_access_key,
                                                          region=region,
+                                                         path=path,
+                                                         branch_name=branch_name,
+                                                         depth=depth,
                                                          scanning_id=scanning_id)
     return report_path, scanning_status
 
@@ -57,13 +64,13 @@ def trigger_workflow(repo_type, repo_url, s3_bucket_name, aws_secret_access_key,
 # The route() function of the Flask class is a decorator,
 # which tells the application which URL should call
 # the associated function.
-# Define a route for the root URL '/ais'
+# Define a route for the root URL '/info'
 @app.route('/info')
 def info():
     return 'Welcome to Watchtower Powered by AIShield \n'
 
 
-# Define a route for '/ais-watchtower' that handles both GET and POST requests
+# Define a route for '/watchtower-aishield' that handles both GET and POST requests
 @app.route('/watchtower-aishield', methods=['GET', 'POST'])
 def index():
     """
@@ -87,34 +94,41 @@ def index():
         Returns:
         - If the request method is POST and processing is successful, the function may
         display success or failure messages via flash() and render the 'form.html' template.
-        - If the request method is GET or there are form input errors, the function renders
-        the 'form.html' template.
+
     """
     if request.method == 'POST':
         repo_type = None
-        # Determine the repository type based on user input
-        if request.form.get('github') is not None:
-            repo_type = "github"
-        elif request.form.get('s3') is not None:
-            repo_type = "s3"
 
+        # Determine the repository type based on user input
+        if request.form.get('type') is not None:
+            repo_type = request.form.get('type')
+            
         # Get the repository URL and S3 bucket name from the form data
         repo_url = request.form.get('github_url')
         s3_bucket_name = request.form.get('s3_bucket_name')
         aws_access_key_id = request.form.get('aws_access_key_id')
         aws_secret_access_key = request.form.get('aws_secret_access_key')
         region = request.form.get('region')
+        branch_name = request.form.get('branch')
+        depth = request.form.get('depth')
+        path = request.form.get('path')
+        
+        if (depth is None) or (not depth):
+            depth=1
+        
+        if (branch_name is None) or (not branch_name):
+            branch_name=None
 
         errors = []
         # Validate the form inputs
         if not repo_type:
             errors.append("Please select a repo_type.")
 
-        if repo_type == "github":
+        if repo_type.lower() == "github" or repo_type.lower() == "huggingface":
             if not repo_url:
-                errors.append("GitHub REPO URL is required.")
+                errors.append("Repo URL is required.")
 
-        elif repo_type == "s3":
+        elif repo_type.lower() == "s3":
             if not s3_bucket_name:
                 errors.append("S3 BUCKET NAME is required.")
             if not aws_access_key_id:
@@ -124,6 +138,12 @@ def index():
             if not region:
                 errors.append("REGION is required.")
 
+        elif repo_type.lower() == "local":
+            repo_type = request.form.get('file_type')
+            if not path:
+                errors.append("Path is required.")
+                
+
         if errors:
             for error in errors:
                 flash(error, 'error')
@@ -131,7 +151,7 @@ def index():
             # Call the simulate_processing function to start the scanning process
             report_path, scanning_status = trigger_workflow(repo_type, repo_url,
                                                             s3_bucket_name, aws_secret_access_key, aws_access_key_id,
-                                                            region)
+                                                            region, branch_name, int(depth), path)
             if (report_path is not None) and scanning_status:
                 flash("Job Submitted successfully! The report can be found at {}.".format(report_path), 'Success')
             else:

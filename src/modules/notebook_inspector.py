@@ -51,14 +51,13 @@ __maintainer__ = "AIShield"
 __email__ = "AIShield.Contact@bosch.com"
 __status__ = "Beta"
 
-import os
 from utils import notebook_inspector_util
 
 
 def scan(file_name: str, requirement_file: str):
     """
         Description: This function will take two parameters notebook file path and requirement file path
-                        It will scan the notebook and requirement file using open source libraries and will return a
+                        It will scan the notebook and requirement file using open source libraries and will return an
                         output json to the orchestrator
 
         input_parameter :
@@ -113,22 +112,21 @@ def scan(file_name: str, requirement_file: str):
                 for tool_name in notebook_scanning_tools:
 
                     output = ""
-                    scanning_status = "success"
                     # Initialize and empty dictionary
                     individual_tool_output = dict()
                     individual_tool_output['tool'] = tool_name
 
                     # Start Detect-Secret Scanning for that given ipynb file
                     if tool_name.lower() == "detect-secret":
-                        output, scanning_status = notebook_inspector_util.detect_secrets_scanning(py_file)
+                        output, _ = notebook_inspector_util.detect_secrets_scanning(py_file)
 
                     # Start whisper Scanning for that given ipynb file
                     elif tool_name.lower() == "whisper":
-                        output, scanning_status = notebook_inspector_util.whisper_scanning(py_file)
+                        output, _ = notebook_inspector_util.whisper_scanning(py_file)
 
                     # Start presidio-analyzer Scanning for that given ipynb file
                     elif tool_name.lower() == "presidio-analyzer":
-                        output, scanning_status = notebook_inspector_util.presidio_analyzer_scanning(py_file)
+                        output, _ = notebook_inspector_util.presidio_analyzer_scanning(py_file)
 
                     # Start safety Scanning for that given ipynb file
                     elif tool_name.lower() == "safety":
@@ -137,7 +135,7 @@ def scan(file_name: str, requirement_file: str):
                         # save as a txt file if we found any packages and versions mentioned
                         fetch_req_file = notebook_inspector_util.extract_packages_from_ipynb_file(py_file)
                         if len(fetch_req_file) != 0:
-                            output, scanning_status = notebook_inspector_util.requirement_file_scanning(fetch_req_file)
+                            output, _ = notebook_inspector_util.requirement_file_scanning(fetch_req_file)
 
                     individual_tool_output['output_log'] = str(output)
 
@@ -160,6 +158,7 @@ def scan(file_name: str, requirement_file: str):
             output_json['requirement_file'] = requirement_file
             for tool_name in requirement_file_scanning_tools:
 
+                output = ""
                 # Initialize and empty dictionary
                 individual_tool_output = dict()
                 individual_tool_output['tool'] = tool_name
@@ -167,7 +166,7 @@ def scan(file_name: str, requirement_file: str):
                 print(
                     'Scanning for vulnerable and non-permissible libraries for {} started'.format(requirement_file))
                 if tool_name.lower() == "safety":
-                    output, status = notebook_inspector_util.requirement_file_scanning(requirement_file)
+                    output, _ = notebook_inspector_util.requirement_file_scanning(requirement_file)
 
                 individual_tool_output['output_log'] = str(output)
 

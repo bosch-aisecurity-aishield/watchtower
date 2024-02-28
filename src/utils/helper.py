@@ -14,7 +14,7 @@ from utils import github_util, aws_s3_util
 
 def fetch_scanning_files(repo_type: str, scanning_id: str, repo_url: str = None, github_clone_dir: str = None,
                          aws_access_key_id: str = None, aws_secret_access_key: str = None, region: str = None,
-                         bucket_name: str = None, s3_download_dir: str = None):
+                         bucket_name: str = None, s3_download_dir: str = None,path: str = None, branch_name: str = 'main',depth: int=1):
     """
         Fetches files to be scanned based on the repository type and scanning ID.
 
@@ -28,7 +28,8 @@ def fetch_scanning_files(repo_type: str, scanning_id: str, repo_url: str = None,
         - region (str, optional): AWS region (only required for 's3' repo_type).
         - bucket_name (str, optional): AWS S3 bucket name (only required for 's3' repo_type).
         - s3_download_dir (str, optional): Local directory for saving files from S3 (only for 's3').
-
+        - path (str,optional): Path of the file/folder (only required for 'file' or 'folder' repo_type) 
+        - branch_name (str,optional): Name of branch of repository (only required to inspect a specific branch of repository other than master/main branch)
         Returns:
         - to_be_scanned_files (List[str]): A list of file paths to be scanned.
         - save_dir (str): The directory where the fetched files are saved.
@@ -40,19 +41,28 @@ def fetch_scanning_files(repo_type: str, scanning_id: str, repo_url: str = None,
 
 
         Note:
-        - When using 'gitHub' repo_type, ensure the 'github_clone_dir' is provided as the local directory for cloning.
+        - When using 'gitHub' or 'huggingface' repo_type, ensure the 'github_clone_dir' is provided as the local directory for cloning.
         - When using 's3' repo_type, ensure AWS credentials ('aws_access_key_id', 'aws_secret_access_key') are provided.
+        - When using 'file' repo_type, ensure file path is provided.
         """
 
     to_be_scanned_files = list()
     save_dir = None
-    if repo_type.lower() == 'github':
-
+    if (repo_type.lower() == 'github' and (depth >=1 )) or repo_type.lower() == 'huggingface':
         github_clone_dir = github_clone_dir + '_{}'.format(scanning_id)
 
         save_dir = github_clone_dir
         # Clone the gitHub repository in the local
-        github_util.clone_github_repo(repo_url, save_dir)
+
+        if repo_type.lower() == 'github':
+            repo_url = repo_url
+        elif repo_type.lower() == 'huggingface':
+            if "https://huggingface.co/" not in repo_url:
+                repo_url = f'https://huggingface.co/{repo_url}'
+    
+
+        
+        github_util.clone_github_repo(repo_url, save_dir,branch_name,depth)
 
         # get all h5 files
         h5_files = search_files(github_clone_dir, '.h5')
@@ -90,6 +100,21 @@ def fetch_scanning_files(repo_type: str, scanning_id: str, repo_url: str = None,
 
         # Fetch the files specified in the file extensions from S3 saved locally
         to_be_scanned_files = s3_object.download_files(file_extensions)
+        
+    if repo_type.lower() == 'file':
+        if path:
+            if path.endswith((".h5", ".pkl", ".pb", ".ipynb", ".txt")):
+                to_be_scanned_files.append(path)
+
+    if repo_type.lower() == 'folder':
+        tar_dir = path  # Assuming file_path is the path to the folder
+        h5_files = search_files(tar_dir, '.h5')
+        pb_files = search_files(tar_dir, '.pb')
+        pkl_files = search_files(tar_dir, '.pkl')
+        ipynb_files = search_files(tar_dir, '.ipynb')
+        requirement_files = search_files(tar_dir, 'requirements.txt')
+
+        to_be_scanned_files = h5_files + ipynb_files + pb_files + pkl_files + requirement_files
 
     return to_be_scanned_files, save_dir
 
