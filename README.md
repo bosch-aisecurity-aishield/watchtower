@@ -276,7 +276,9 @@ On successful completion of the Watchtower scan, three reports will be generated
 3. Doesn't support scanning of .pb file from s3 buckets.
 4. Presidio analyser has 1000000 (1GB) has max length. Any data greater than 1GB will not be captured in reports.  
 5. Possible miss-match in severity levels from Whispers library and Watchtower severity levels.
-6. Watchtower application is tested in Ubuntu LTS 22.04.
+6. Repositories cloned from GitHub and Hugging Face during watchtower analysis will not be automatically removed
+   post-analysis. It is advisable to manually delete these folders found within the 'src' directory.
+7. Watchtower application is tested in Ubuntu LTS 22.04.
 
 ### Upcoming Features
 
