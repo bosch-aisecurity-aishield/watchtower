@@ -145,7 +145,7 @@ def orchestrator(repo_type: str = 'github', repo_url: str = None, github_clone_d
     if save_dir != None:
         # Clean up the local cloned directory either scanning failed or Completed
         if repo_type.lower() == "github":
-            github_util.delete_github_repo(repo_path=save_dir)
+            github_util.delete_github_repo(repo_dir=save_dir)
         elif repo_type.lower() not in ["file", "folder"]:
             helper.delete_directory(base_path,[save_dir])
 

@@ -81,4 +81,4 @@ def delete_github_repo(repo_dir):
         print("Locally cloned repository has been successfully removed")
           
     except Exception as e:
-        print("{} Failed to remove due to {}".format(repo_dir, str(e)))
+        print("{} Failed to remove due to {}, it is recommended to delete the directory manually".format(repo_dir, str(e)))
