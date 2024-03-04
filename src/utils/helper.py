@@ -14,7 +14,7 @@ from utils import github_util, aws_s3_util
 
 def fetch_scanning_files(repo_type: str, scanning_id: str, repo_url: str = None, github_clone_dir: str = None,
                          aws_access_key_id: str = None, aws_secret_access_key: str = None, region: str = None,
-                         bucket_name: str = None, s3_download_dir: str = None,path: str = None, branch_name: str = 'main',depth: int=1):
+                         bucket_name: str = None, s3_download_dir: str = None,path: str = None, branch_name: str = 'main',depth: int=1,base_path: str=None):
     """
         Fetches files to be scanned based on the repository type and scanning ID.
 
@@ -53,7 +53,10 @@ def fetch_scanning_files(repo_type: str, scanning_id: str, repo_url: str = None,
 
         save_dir = github_clone_dir
         # Clone the gitHub repository in the local
-
+        # if not os.path.exists(save_dir):
+        #     os.makedirs(save_dir)
+        
+        # print(os.path.dirname(save_dir))
         if repo_type.lower() == 'github':
             repo_url = repo_url
         elif repo_type.lower() == 'huggingface':
@@ -61,23 +64,22 @@ def fetch_scanning_files(repo_type: str, scanning_id: str, repo_url: str = None,
                 repo_url = f'https://huggingface.co/{repo_url}'
     
 
-        
         github_util.clone_github_repo(repo_url, save_dir,branch_name,depth)
-
+        
         # get all h5 files
-        h5_files = search_files(github_clone_dir, '.h5')
+        h5_files = search_files(base_path,github_clone_dir, '.h5')
 
         # get all .pb files
-        pb_files = search_files(github_clone_dir, '.pb')
+        pb_files = search_files(base_path,github_clone_dir, '.pb')
 
         # get all .pkl files
-        pkl_files = search_files(github_clone_dir, '.pkl')
+        pkl_files = search_files(base_path,github_clone_dir, '.pkl')
 
         # get all ipynb files
-        ipynb_files = search_files(github_clone_dir, '.ipynb')
+        ipynb_files = search_files(base_path,github_clone_dir, '.ipynb')
 
         # get requirements files
-        requirement_files = search_files(github_clone_dir, 'requirements.txt')
+        requirement_files = search_files(base_path,github_clone_dir, 'requirements.txt')
 
         to_be_scanned_files = h5_files + ipynb_files + pb_files + pkl_files + requirement_files
 
@@ -90,7 +92,7 @@ def fetch_scanning_files(repo_type: str, scanning_id: str, repo_url: str = None,
         # Ensure local directory exists
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
-
+        
         # create s3 object to interact with s3 buckets
         s3_object = aws_s3_util.AIShieldWatchtowerS3(aws_access_key_id, aws_secret_access_key,
                                                      region, bucket_name, save_dir)
@@ -108,18 +110,19 @@ def fetch_scanning_files(repo_type: str, scanning_id: str, repo_url: str = None,
 
     if repo_type.lower() == 'folder':
         tar_dir = path  # Assuming file_path is the path to the folder
-        h5_files = search_files(tar_dir, '.h5')
-        pb_files = search_files(tar_dir, '.pb')
-        pkl_files = search_files(tar_dir, '.pkl')
-        ipynb_files = search_files(tar_dir, '.ipynb')
-        requirement_files = search_files(tar_dir, 'requirements.txt')
+        folder_base_path = os.path.dirname(tar_dir)
+        h5_files = search_files(folder_base_path,tar_dir, '.h5')
+        pb_files = search_files(folder_base_path,tar_dir, '.pb')
+        pkl_files = search_files(folder_base_path,tar_dir, '.pkl')
+        ipynb_files = search_files(folder_base_path,tar_dir, '.ipynb')
+        requirement_files = search_files(folder_base_path,tar_dir, 'requirements.txt')
 
         to_be_scanned_files = h5_files + ipynb_files + pb_files + pkl_files + requirement_files
 
     return to_be_scanned_files, save_dir
 
 
-def search_files(target_dir: str, file_extensions: str):
+def search_files(base_path:str, target_dir: str, file_extensions: str):
     """
     Finds all the files ending with a given extension in the specified directory and its sub-folders.
 
@@ -130,7 +133,14 @@ def search_files(target_dir: str, file_extensions: str):
     Returns:
     - List of paths to files with the specified extension.
     """
+    if not target_dir:
+        raise Exception("Target directory is empty")
 
+    # Normalize the target directory and check if it is within the base_path
+    full_target_dir = os.path.normpath(os.path.join(base_path, target_dir))
+    
+    if not os.path.abspath(full_target_dir).startswith(os.path.abspath(base_path)):
+        raise Exception("Target directory is outside the base path")
     # List to hold the paths of all files matching the given extension
     matching_files = []
 
@@ -166,7 +176,7 @@ def make_directory(path):
         print("{} created successfully".format(path))
 
 
-def delete_directory(directory):
+def delete_directory(base_path :str,directory):
     """
     delete directory
 
@@ -181,6 +191,12 @@ def delete_directory(directory):
     """
     
     for d in directory:
+
+        full_path = os.path.normpath(os.path.join(base_path, d))
+        if not os.path.abspath(full_path).startswith(os.path.abspath(base_path)):
+            print("Path '{}' is outside the base folder '{}' and cannot be deleted.".format(full_path, base_path))
+            return
+
         try:
             if os.path.isdir(d):
                 try:
