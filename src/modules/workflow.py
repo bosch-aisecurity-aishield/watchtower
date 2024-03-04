@@ -9,7 +9,7 @@ __status__ = "Beta"
 
 from tqdm import tqdm
 from utils import helper, github_util, report_util
-
+import os
 from modules import notebook_inspector, model_inspector
 
 
@@ -72,6 +72,7 @@ def orchestrator(repo_type: str = 'github', repo_url: str = None, github_clone_d
     scanning_status = True
     failed_scan_files = list()
     scanned_report_dictionary = {}
+    base_path = str(os.getcwd())
 
     try:
         print("Scanning Started ...")
@@ -85,7 +86,8 @@ def orchestrator(repo_type: str = 'github', repo_url: str = None, github_clone_d
                                                                     scanning_id=scanning_id,
                                                                     path=path,
                                                                     branch_name=branch_name,
-                                                                    depth=depth)
+                                                                    depth=depth,
+                                                                    base_path = base_path)
 
         # iterate to get response from each files
         for file in tqdm(to_be_scanned_files):
@@ -139,12 +141,13 @@ def orchestrator(repo_type: str = 'github', repo_url: str = None, github_clone_d
     except Exception as e:
         scanning_status = False
         print("Scanning Failed due to {}".format(str(e)))
-
-    # Clean up the local cloned directory either scanning failed or Completed
-    if repo_type.lower() == "github":
-        github_util.delete_github_repo(repo_dir=save_dir)
-    elif repo_type.lower() not in ["file", "folder"]:
-        helper.delete_directory([save_dir])
+        
+    if save_dir != None:
+        # Clean up the local cloned directory either scanning failed or Completed
+        if repo_type.lower() == "github":
+            github_util.delete_github_repo(repo_path=save_dir)
+        elif repo_type.lower() not in ["file", "folder"]:
+            helper.delete_directory(base_path,[save_dir])
 
     return report_path, scanning_status
 
