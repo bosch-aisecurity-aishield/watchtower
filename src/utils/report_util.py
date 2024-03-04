@@ -334,18 +334,18 @@ def whisper_output_parser(output: str):
         output = eval(output)
         if len(output) != 0:
             for out in output:
-                key = out['severity'].lower()
-                if key == "info" or key == "minor":
-                    key = "Low"
-                elif key == "major":
-                    key = "Medium"
-                elif key == "blocker" or key == "critical":
-                    key = "High"
-                out['vulnerability_severity'] = key
-                if key in vulnerability_severity_map:
-                    vulnerability_severity_map[key] = int(vulnerability_severity_map[key]) + 1
+                whisper_sev_key = out['severity'].lower()
+                if whisper_sev_key == "info" or whisper_sev_key == "minor":
+                    vul_sev_key = "Low"
+                elif whisper_sev_key == "major":
+                    vul_sev_key = "Medium"
+                elif whisper_sev_key == "blocker" or whisper_sev_key == "critical":
+                    vul_sev_key = "High"
+                out['vulnerability_severity'] = vul_sev_key
+                if vul_sev_key in vulnerability_severity_map:
+                    vulnerability_severity_map[vul_sev_key] = int(vulnerability_severity_map[vul_sev_key]) + 1
                 else:
-                    vulnerability_severity_map[key] = 1
+                    vulnerability_severity_map[vul_sev_key] = 1
 
     except Exception as e:
         print("Failed to parse whisper_output {}".format(e))
