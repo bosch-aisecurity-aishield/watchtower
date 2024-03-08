@@ -335,11 +335,11 @@ def whisper_output_parser(output: str):
         if len(output) != 0:
             for out in output:
                 whisper_sev_key = out['severity'].lower()
-                if whisper_sev_key == "info" or whisper_sev_key == "minor":
+                if whisper_sev_key == "info" or whisper_sev_key == "minor" or whisper_sev_key == "low":
                     vul_sev_key = "Low"
-                elif whisper_sev_key == "major":
+                elif whisper_sev_key == "major" or whisper_sev_key == "medium":
                     vul_sev_key = "Medium"
-                elif whisper_sev_key == "blocker" or whisper_sev_key == "critical":
+                elif whisper_sev_key == "blocker" or whisper_sev_key == "critical" or whisper_sev_key == "high":
                     vul_sev_key = "High"
                 out['vulnerability_severity'] = vul_sev_key
                 if vul_sev_key in vulnerability_severity_map:
