@@ -3,22 +3,30 @@ import shutil
 import requests
 from zipfile import ZipFile, BadZipFile
 
-def list_files(path: str, extensions: list):
+def list_files(base_path: str, target_path: str, extensions: list):
     # List to hold the paths of all files matching the given extension
     matching_files = []
-
+    
+    full_target_dir = os.path.normpath(os.path.join(base_path, target_path))
+    if not os.path.abspath(full_target_dir).startswith(os.path.abspath(base_path)):
+        raise Exception("Target directory is outside the base path")
+      
     # Check if the given path is a directory or a file
-    if os.path.isfile(path):
+    if os.path.isfile(target_path):
         # If it's a file and a ZIP file, handle it
-        if path.endswith(".zip"):
-            zip_extractor(path, delete_zip=True)
-            matching_files_in_zipped = list_files(path=path[:-4], extensions=extensions)
+        if target_path.endswith(".zip"):
+            zip_extractor(base_path,target_path, delete_zip=True)
+            matching_files_in_zipped = list_files(base_path,target_path=target_path[:-4], extensions=extensions)
             matching_files += matching_files_in_zipped
-        elif any(path.endswith(ext) for ext in extensions):
-            matching_files.append(os.path.relpath(path, os.path.dirname(path)))
+        elif any(target_path.endswith(ext) for ext in extensions):
+            matching_files.append(os.path.relpath(target_path, os.path.dirname(target_path)))
     else:
-        # If it's a directory, walk through each directory starting
-        for root, dirs, files in os.walk(path):
+        # If it's a directory, walk through each directory starting  
+        full_target_dir = os.path.normpath(os.path.join(base_path, target_path))
+        if not os.path.abspath(full_target_dir).startswith(os.path.abspath(base_path)):
+            raise Exception("Target directory is outside the base path")
+        
+        for root, dirs, files in os.walk(target_path):
             # Check each file in the current directory
             for file in files:
                 # if file is zip file, extract it
@@ -26,8 +34,8 @@ def list_files(path: str, extensions: list):
                     # full path of zip file
                     zip_full_path = os.path.join(root, file)
                     # extract and delete zip file
-                    zip_extractor(zip_full_path, delete_zip=True)
-                    matching_files_in_zipped = list_files(path=zip_full_path[:-4], extensions=extensions)
+                    zip_extractor(base_path,zip_full_path, delete_zip=True)
+                    matching_files_in_zipped = list_files(base_path,target_path=zip_full_path[:-4], extensions=extensions)
                     matching_files += matching_files_in_zipped
                 elif any(file.endswith(ext) for ext in extensions):    
                     #matching_files.append(os.path.relpath(os.path.join(root, file), path))
@@ -37,9 +45,13 @@ def list_files(path: str, extensions: list):
     return matching_files
 
 
-def remove_directories_with_hidden_files(root_path):
+def remove_directories_with_hidden_files(base_path,root_path):
     """Recursively remove directories containing only files starting with a dot."""
-
+    
+    full_target_dir = os.path.normpath(os.path.join(base_path, root_path))
+    if not os.path.abspath(full_target_dir).startswith(os.path.abspath(base_path)):
+        raise Exception("Target directory is outside the base path")
+    
     for root, dirs, files in os.walk(root_path, topdown=False):
         for directory in dirs:
             dir_path = os.path.join(root, directory)
@@ -58,7 +70,7 @@ def remove_directories_with_hidden_files(root_path):
                     #logger.info("{} : File {} removed successfully.".format(logger_name, dot_file_path))
 
 
-def zip_extractor(file, extract_path=None, delete_zip=False):
+def zip_extractor(base_path,file, extract_path=None, delete_zip=False):
     """ Extract the zip
         Args:
             extract_path: String where the output artifact is saved
@@ -78,16 +90,18 @@ def zip_extractor(file, extract_path=None, delete_zip=False):
             # Extract the remaining files
             zf.extractall(extract_path, members=file_list)
         #logger.info("{} - {} Extracted successfully".format(logger_name, file))
-        if delete_zip:
+        if delete_zip:  
+            full_target_dir = os.path.normpath(os.path.join(base_path, file))
+            if not os.path.abspath(full_target_dir).startswith(os.path.abspath(base_path)):
+                raise Exception("Target directory is outside the base path") 
             os.remove(file)
            # logger.info("{} : {} removed successfully.".format(logger_name, file))
         # to remove hidden files e.g. when you zip from macbook, they will create all files starting with . file extension
-        remove_directories_with_hidden_files(extract_path)
+        remove_directories_with_hidden_files(base_path,extract_path)
     except (BadZipFile, Exception) as e:
         print(f"Error extracting {file}: {e}")
         #logger.error("{} : Error extracting {}: {}".format(logger_name, file, e))
     
-
 
 
 
