@@ -9,7 +9,7 @@ __status__ = "Beta"
 
 import os
 import shutil
-from utils import github_util, aws_s3_util
+from utils import github_util, aws_s3_util, zip_util
 
 
 def fetch_scanning_files(repo_type: str, scanning_id: str, repo_url: str = None, github_clone_dir: str = None,
@@ -48,40 +48,45 @@ def fetch_scanning_files(repo_type: str, scanning_id: str, repo_url: str = None,
 
     to_be_scanned_files = list()
     save_dir = None
+    extensions = [".h5", ".pkl", ".pb", ".ipynb","requirements.txt"]
     if (repo_type.lower() == 'github' and (depth >=1 )) or repo_type.lower() == 'huggingface':
         github_clone_dir = github_clone_dir + '_{}'.format(scanning_id)
 
         save_dir = github_clone_dir
-        # Clone the gitHub repository in the local
-        # if not os.path.exists(save_dir):
-        #     os.makedirs(save_dir)
         
-        # print(os.path.dirname(save_dir))
         if repo_type.lower() == 'github':
             repo_url = repo_url
         elif repo_type.lower() == 'huggingface':
-            if "https://huggingface.co/" not in repo_url:
-                repo_url = f'https://huggingface.co/{repo_url}'
-    
+            HUGGINGFACE_DOMAIN = r"https://huggingface.co/"
+            if not repo_url.startswith(HUGGINGFACE_DOMAIN):
+                repo_url = HUGGINGFACE_DOMAIN + repo_url
+            else:
+                url_path = repo_url[len(HUGGINGFACE_DOMAIN):].split("/")
+                # Ensure only user name and repository name are included
+                if len(url_path) > 2:
+                    repo_url = HUGGINGFACE_DOMAIN + "/".join(url_path[:2])
 
         github_util.clone_github_repo(repo_url, save_dir,branch_name,depth)
-        
+    
         # get all h5 files
-        h5_files = search_files(base_path,github_clone_dir, '.h5')
-
-        # get all .pb files
-        pb_files = search_files(base_path,github_clone_dir, '.pb')
-
-        # get all .pkl files
-        pkl_files = search_files(base_path,github_clone_dir, '.pkl')
-
-        # get all ipynb files
-        ipynb_files = search_files(base_path,github_clone_dir, '.ipynb')
-
-        # get requirements files
-        requirement_files = search_files(base_path,github_clone_dir, 'requirements.txt')
-
-        to_be_scanned_files = h5_files + ipynb_files + pb_files + pkl_files + requirement_files
+        # h5_files = search_files(base_path,github_clone_dir, '.h5')
+        # # get all .pb files
+        # pb_files = search_files(base_path,github_clone_dir, '.pb')
+        # # get all .pkl files
+        # pkl_files = search_files(base_path,github_clone_dir, '.pkl')
+        # # get all ipynb files
+        # ipynb_files = search_files(base_path,github_clone_dir, '.ipynb')
+        # #get requirements files
+        ##requirement_files = search_files(base_path,github_clone_dir, 'requirements.txt')
+        #get files from zip files
+        
+        all_files = search_files(base_path,github_clone_dir, extensions)
+        
+        #to_be_scanned_files = h5_files + ipynb_files + pb_files + pkl_files
+       
+        to_be_scanned_files = all_files
+        
+        
 
     if repo_type.lower() == 's3':
 
@@ -105,24 +110,29 @@ def fetch_scanning_files(repo_type: str, scanning_id: str, repo_url: str = None,
         
     if repo_type.lower() == 'file':
         if path:
-            if path.endswith((".h5", ".pkl", ".pb", ".ipynb", ".txt")):
+            if path.endswith((".h5", ".pkl", ".pb", ".ipynb","requirements.txt")):
                 to_be_scanned_files.append(path)
+            elif path.endswith(".zip"):
+                to_be_scanned_files = zip_util.list_files(path,extensions)
 
     if repo_type.lower() == 'folder':
         tar_dir = path  # Assuming file_path is the path to the folder
         folder_base_path = os.path.dirname(tar_dir)
-        h5_files = search_files(folder_base_path,tar_dir, '.h5')
-        pb_files = search_files(folder_base_path,tar_dir, '.pb')
-        pkl_files = search_files(folder_base_path,tar_dir, '.pkl')
-        ipynb_files = search_files(folder_base_path,tar_dir, '.ipynb')
-        requirement_files = search_files(folder_base_path,tar_dir, 'requirements.txt')
+        
+        all_files = search_files(folder_base_path,tar_dir, extensions)
+        # h5_files = search_files(folder_base_path,tar_dir, '.h5')
+        # pb_files = search_files(folder_base_path,tar_dir, '.pb')
+        # pkl_files = search_files(folder_base_path,tar_dir, '.pkl')
+        # ipynb_files = search_files(folder_base_path,tar_dir, '.ipynb')
+        # requirement_files = search_files(folder_base_path,tar_dir, 'requirements.txt')
 
-        to_be_scanned_files = h5_files + ipynb_files + pb_files + pkl_files + requirement_files
+        # to_be_scanned_files = h5_files + ipynb_files + pb_files + pkl_files +requirement_files
+        to_be_scanned_files  = all_files
 
     return to_be_scanned_files, save_dir
 
 
-def search_files(base_path:str, target_dir: str, file_extensions: str):
+def search_files(base_path:str, target_dir: str, file_extensions):
     """
     Finds all the files ending with a given extension in the specified directory and its sub-folders.
 
@@ -138,21 +148,20 @@ def search_files(base_path:str, target_dir: str, file_extensions: str):
 
     # Normalize the target directory and check if it is within the base_path
     full_target_dir = os.path.normpath(os.path.join(base_path, target_dir))
-    
     if not os.path.abspath(full_target_dir).startswith(os.path.abspath(base_path)):
         raise Exception("Target directory is outside the base path")
     # List to hold the paths of all files matching the given extension
     matching_files = []
-
-    # Walk through each directory starting from the target_dir
-    for root, dirs, files in os.walk(target_dir):
-        # Check each file in the current directory
-        for file in files:
-            # If the file ends with the specified extension, add its full path to our list
-            if file.endswith(file_extensions):
-                matching_files.append(os.path.join(root, file))
-
+    # for root, dirs, files in os.walk(target_dir):
+    #     # Check each file in the current directory
+    #     for file in files:
+    #         # If the file ends with the specified extension, add its full path to our list
+    #         if file.endswith(file_extensions):
+    #             matching_files.append(os.path.join(root, file))
+    matching_files=zip_util.list_files(target_dir, file_extensions)
+    
     return matching_files
+
 
 
 def make_directory(path):
