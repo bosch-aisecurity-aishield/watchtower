@@ -113,7 +113,8 @@ def fetch_scanning_files(repo_type: str, scanning_id: str, repo_url: str = None,
             if path.endswith((".h5", ".pkl", ".pb", ".ipynb","requirements.txt")):
                 to_be_scanned_files.append(path)
             elif path.endswith(".zip"):
-                to_be_scanned_files = zip_util.list_files(path,extensions)
+                base_path = os.path.dirname(path)
+                to_be_scanned_files = search_files(base_path,path,extensions)
 
     if repo_type.lower() == 'folder':
         tar_dir = path  # Assuming file_path is the path to the folder
@@ -158,7 +159,7 @@ def search_files(base_path:str, target_dir: str, file_extensions):
     #         # If the file ends with the specified extension, add its full path to our list
     #         if file.endswith(file_extensions):
     #             matching_files.append(os.path.join(root, file))
-    matching_files=zip_util.list_files(target_dir, file_extensions)
+    matching_files=zip_util.list_files(base_path,target_dir, file_extensions)
     
     return matching_files
 
@@ -243,4 +244,3 @@ def check_file_at_given_dir(path: str, file_name: str = 'requirements.txt'):
     if file_name in os.listdir(path):
         file_path = os.path.join(path, file_name)
     return file_path
-
