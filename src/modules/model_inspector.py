@@ -89,6 +89,17 @@ def scan(model_path_input):
             output["scanning_reports"]["tool"] = "unsafe-check-pb"
             output_log = model_inspector_util.unsafe_check_pb(model_path_input)
     
+        elif model_path_input.endswith(".pt") or model_path_input.endswith(".pth") or model_path_input.endswith(".bin") or model_path_input.endswith(".safetensors"):
+            if not model_path_input.endswith(".safetensors"):
+                output["scanning_reports"]["tool"] = "unsafe-check-pt"
+            else:
+                output["scanning_reports"]["tool"] = "unsafe-check-safetensors"
+            output_log = model_inspector_util.unsafe_check_pytorch_safetensors(model_path_input)
+
+        # elif model_path_input.endswith(".safetensors"):
+        #     output["scanning_reports"]["tool"] = "unsafe-check-safetensors"
+        #     output_log = model_inspector_util.unsafe_check_safetensors(model_path_input)
+    
         output["scanning_reports"]["output_log"] = output_log
     except Exception as e:
         scanning_status = str(e)

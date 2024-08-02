@@ -88,8 +88,8 @@ def create_aggregator_report(result_dict: dict, scanned_files: list,
             if file.endswith(".h5"):
                 count = count + 1
         number_of_model_files = sum(1 for file in scanned_files if file.endswith(".h5") or file.endswith(".pb")
-                                    or file.endswith(".pkl"))
-        number_of_notebooks = sum(1 for file in scanned_files if file.endswith(".ipynb"))
+                                    or file.endswith(".pkl")or file.endswith(".pt")or file.endswith(".pth") or file.endswith(".safetensors")or file.endswith(".bin"))
+        number_of_notebooks = sum(1 for file in scanned_files if file.endswith(".ipynb") or file.endswith('.py'))
         number_of_requirement_file = sum(1 for file in scanned_files if file.endswith("requirements.txt"))
 
         aggregator_result_dict["Total Number of Model Found"] = number_of_model_files
@@ -97,8 +97,8 @@ def create_aggregator_report(result_dict: dict, scanned_files: list,
             "Total Number of Notebooks & Requirement files Found"] = number_of_notebooks + number_of_requirement_file
 
         number_of_model_files_failed = sum(
-            1 for file in failed_scan_files if file.endswith(".h5") or file.endswith(".pb"))
-        number_of_notebooks_failed = sum(1 for file in failed_scan_files if file.endswith(".ipynb"))
+            1 for file in failed_scan_files if file.endswith(".h5") or file.endswith(".pb")or file.endswith(".pt")or file.endswith(".pth") or file.endswith(".safetensors")or file.endswith(".bin"))
+        number_of_notebooks_failed = sum(1 for file in failed_scan_files if file.endswith(".ipynb")or file.endswith(".py"))
         number_of_requirement_file_failed = sum(1 for file in failed_scan_files if file.endswith(".requirements.txt"))
 
         # calculate number of model failed to scan
@@ -191,7 +191,7 @@ def result_parser(result_dict: str):
         result_dict = eval(result_dict)
         for key, value in result_dict.items():
             scanning_reports = value['scanning_reports']
-            if key.endswith(".h5") or key.endswith(".pkl") or key.endswith(".pb"):
+            if key.endswith(".h5") or key.endswith(".pkl") or key.endswith(".pb") or key.endswith(".pt")or key.endswith(".pth") or key.endswith(".safetensors")or key.endswith(".bin"):
                 tool_wise_vulnerability_severity_map = model_inspector_result_parser(scanning_reports['output_log'])
 
                 # Iterate through the keys of both dictionaries
