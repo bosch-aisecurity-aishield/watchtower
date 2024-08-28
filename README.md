@@ -344,7 +344,7 @@ First and foremost, we want to extend our deepest gratitude to the vibrant open-
 - [Security in MLOps Pipeline](https://irmcon.com/blog/security-in-mlops-pipeline/)
 - [A traditional attack vector applied to AI/ML Models](https://5stars217.github.io/2023-03-30-on-malicious-models/)
 - [Pickle Scanner Reference github url ](https://github.com/mmaitre314/picklescan/tree/main)
- -[Pypi Reference url for Pickle Scanner library](https://pypi.org/project/picklescan/)
+- [Pypi Reference url for Pickle Scanner library](https://pypi.org/project/picklescan/)
 
 ... and to many others who have contributed their knowledge on open-source licenses, API key security, MLOps pipeline security, and more.
 
