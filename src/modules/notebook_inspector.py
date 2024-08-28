@@ -104,7 +104,6 @@ def scan(file_name: str, requirement_file: str):
 
             # Converting ipynb file to py format file for scanning
             py_file = notebook_inspector_util.convert_ipynb_to_py_format(file_name)
-
             if py_file is not None:
                 # list the scanning tools included for notebook scanning part
 
