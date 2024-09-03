@@ -101,9 +101,13 @@ def scan(file_name: str, requirement_file: str):
             # Print a message to indicate the start of the conversion
             print("Notebook Scanning started for file {}".format(file_name))
             # Add the file path for got for scanning to the output json
-
+            
+            extension = file_name.split(".")[-1] # Check the extension of the file
             # Converting ipynb file to py format file for scanning
-            py_file = notebook_inspector_util.convert_ipynb_to_py_format(file_name)
+            if extension=="py":
+                py_file = file_name # If the file is .py file, conversion is not needed, hence assigning file_name to py_file
+            else:
+                py_file = notebook_inspector_util.convert_ipynb_to_py_format(file_name) # If file is .ipynb file, convert it to .py file
             if py_file is not None:
                 # list the scanning tools included for notebook scanning part
 
