@@ -54,31 +54,37 @@ For using AIShield Watchtower, clone Watchtower repo. Install prerequisites and 
 ### Prerequisites
 
 - For  running Watchtower in CLI or UI version, python3 and pip should be installed in the host system.
-- For running UI-Docker version, docker and docker-compose should be installed in the host system
+- For running UI-Docker version, docker and docker-compose should be installed in the host system. For docker users, refer [UI-Docker](#ui-docker)
 
 Cloning Watchtower repo
 
 ```git
 git clone https://github.com/bosch-aisecurity-aishield/watchtower.git
+cd watchtower
 ```
+### Install Watchtower related dependency libraries using following commands:
 
-Once Git repositories cloned, change directory.
-
-**NOTE**: For docker users, refer [UI-Docker](#ui-docker)
-
+#### Run this command to install dependency in Linux(Ubuntu) system:
 ```bash
-cd watchtower/src
+./install.sh
 ```
 
-Install Watchtower related dependency libraries using following commands
-
-```python
-./install.sh
+#### Run this command to install dependency in windows system:
+```powershell
+./install.bat
 ```
 
 ---
 
 ### Inspect Jupyter Notebooks and ML/DL Models 
+
+Change directory to src.
+
+```bash
+
+cd src
+
+```
 
 Inspection of Jupyter Notebooks and ML/DL models can be done by any of the three methods:
 
