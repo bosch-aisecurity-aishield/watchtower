@@ -73,9 +73,7 @@ cd watchtower/src
 Install Watchtower related dependency libraries using following commands
 
 ```python
-pip install -r requirements.txt
-
-python -m spacy download en_core_web_lg
+./install.sh
 ```
 
 ---
