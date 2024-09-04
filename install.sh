@@ -6,6 +6,6 @@ pip install -r src/requirements.txt
 # Download the spaCy model
 python -m spacy download en_core_web_lg
 
-apt-get install git-lfs
+sudo apt-get install git-lfs
 
 echo "Installation complete!"
