@@ -78,7 +78,7 @@ def create_aggregator_report(result_dict: dict, scanned_files: list,
     detailed_result_dict = dict()  # Initialize an empty dictionary for detailed scanning results
     try:
         aggregator_result_dict['Repository Type'] = repo_type
-        if repo_type.lower() == "github":
+        if repo_type.lower() == "github" or repo_type.lower() == "huggingface":
             aggregator_result_dict["Repository URL"] = repo_url
 
         elif repo_type.lower() == "s3":
@@ -88,8 +88,8 @@ def create_aggregator_report(result_dict: dict, scanned_files: list,
             if file.endswith(".h5"):
                 count = count + 1
         number_of_model_files = sum(1 for file in scanned_files if file.endswith(".h5") or file.endswith(".pb")
-                                    or file.endswith(".pkl"))
-        number_of_notebooks = sum(1 for file in scanned_files if file.endswith(".ipynb"))
+                                    or file.endswith(".pkl")or file.endswith(".pt")or file.endswith(".pth") or file.endswith(".safetensors")or file.endswith(".bin"))
+        number_of_notebooks = sum(1 for file in scanned_files if file.endswith(".ipynb") or file.endswith('.py'))
         number_of_requirement_file = sum(1 for file in scanned_files if file.endswith("requirements.txt"))
 
         aggregator_result_dict["Total Number of Model Found"] = number_of_model_files
@@ -97,8 +97,8 @@ def create_aggregator_report(result_dict: dict, scanned_files: list,
             "Total Number of Notebooks & Requirement files Found"] = number_of_notebooks + number_of_requirement_file
 
         number_of_model_files_failed = sum(
-            1 for file in failed_scan_files if file.endswith(".h5") or file.endswith(".pb"))
-        number_of_notebooks_failed = sum(1 for file in failed_scan_files if file.endswith(".ipynb"))
+            1 for file in failed_scan_files if file.endswith(".h5") or file.endswith(".pb")or file.endswith(".pt")or file.endswith(".pth") or file.endswith(".safetensors")or file.endswith(".bin"))
+        number_of_notebooks_failed = sum(1 for file in failed_scan_files if file.endswith(".ipynb")or file.endswith(".py"))
         number_of_requirement_file_failed = sum(1 for file in failed_scan_files if file.endswith(".requirements.txt"))
 
         # calculate number of model failed to scan
@@ -138,14 +138,22 @@ def model_inspector_result_parser(output: list):
     vulnerability_severity_map = dict()  # Initialize an empty dictionary for vulnerability vs severity map
     try:
         # If output is not empty, attempt to parse
-        if len(output) != 0:
-            for out in output:
-                # get the severity from the output
-                severity = out.split("-")[0].split(":")[1].replace(" ", "")
-                if severity in vulnerability_severity_map:
-                    vulnerability_severity_map[severity] = int(vulnerability_severity_map[severity]) + 1
-                else:
-                    vulnerability_severity_map[severity] = 1
+        if len(output['output_log']) != 0 :
+            if output['tool'] == 'picklescan':
+                for pickle_vul in output['output_log']:
+                    severity = pickle_vul['severity'] 
+                    if severity in vulnerability_severity_map:
+                        vulnerability_severity_map[severity] = int(vulnerability_severity_map[severity]) + 1
+                    else:
+                        vulnerability_severity_map[severity] = 1
+            else:
+                for out in output['output_log']:
+                    # get the severity from the output
+                    severity = out.split("-")[0].split(":")[1].replace(" ", "")
+                    if severity in vulnerability_severity_map:
+                        vulnerability_severity_map[severity] = int(vulnerability_severity_map[severity]) + 1
+                    else:
+                        vulnerability_severity_map[severity] = 1
 
     except Exception as e:
         print("Failed to parse model inspector tool output {}".format(e))
@@ -191,19 +199,7 @@ def result_parser(result_dict: str):
         result_dict = eval(result_dict)
         for key, value in result_dict.items():
             scanning_reports = value['scanning_reports']
-            if key.endswith(".h5") or key.endswith(".pkl") or key.endswith(".pb"):
-                tool_wise_vulnerability_severity_map = model_inspector_result_parser(scanning_reports['output_log'])
-
-                # Iterate through the keys of both dictionaries
-                # Create an aggregator result of Severity vs number of Vulnerabilities found
-                for k, v in tool_wise_vulnerability_severity_map.items():
-                    if k in model_vul_sev_result:
-                        model_vul_sev_result[k] += v
-                    else:
-                        model_vul_sev_result[k] = v
-                pass
-
-            else:
+            if key.endswith(".ipynb") or key.endswith(".py") or key.endswith(".txt"):
                 for tool_output in scanning_reports:
                     tool_wise_vulnerability_severity_map = dict()
                     if tool_output['tool'] == "Detect-Secret":
@@ -227,7 +223,6 @@ def result_parser(result_dict: str):
                             tool_output['output_log'])
                         tool_output['output_log'] = output_log
 
-                    # Iterate through the keys of both dictionaries
                     # Create an aggregator result of Severity vs number of Vulnerabilities found
                     for k, v in tool_wise_vulnerability_severity_map.items():
                         if k in notebook_vul_sev_result:
@@ -236,6 +231,20 @@ def result_parser(result_dict: str):
                             notebook_vul_sev_result[k] = v
 
                 result_dict[key] = scanning_reports
+                
+                pass
+
+            else:
+                for tool_output in scanning_reports:
+                    if len(tool_output)!=0:
+                        tool_wise_vulnerability_severity_map = model_inspector_result_parser(tool_output)
+                    # Iterate through the keys of both dictionaries
+                    # Create an aggregator result of Severity vs number of Vulnerabilities found
+                    for k, v in tool_wise_vulnerability_severity_map.items():
+                        if k in model_vul_sev_result:
+                            model_vul_sev_result[k] += v
+                        else:
+                            model_vul_sev_result[k] = v
 
     return notebook_vul_sev_result, model_vul_sev_result, result_dict
 

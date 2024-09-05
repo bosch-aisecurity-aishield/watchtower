@@ -54,33 +54,37 @@ For using AIShield Watchtower, clone Watchtower repo. Install prerequisites and 
 ### Prerequisites
 
 - For  running Watchtower in CLI or UI version, python3 and pip should be installed in the host system.
-- For running UI-Docker version, docker and docker-compose should be installed in the host system
+- For running UI-Docker version, docker and docker-compose should be installed in the host system. For docker users, refer [UI-Docker](#ui-docker)
 
 Cloning Watchtower repo
 
 ```git
 git clone https://github.com/bosch-aisecurity-aishield/watchtower.git
+cd watchtower
 ```
+### Install Watchtower related dependency libraries using following commands:
 
-Once Git repositories cloned, change directory.
-
-**NOTE**: For docker users, refer [UI-Docker](#ui-docker)
-
+#### Run this command to install dependency in Linux(Ubuntu) system:
 ```bash
-cd watchtower/src
+./install.sh
 ```
 
-Install Watchtower related dependency libraries using following commands
-
-```python
-pip install -r requirements.txt
-
-python -m spacy download en_core_web_lg
+#### Run this command to install dependency in windows system:
+```powershell
+./install.bat
 ```
 
 ---
 
 ### Inspect Jupyter Notebooks and ML/DL Models 
+
+Change directory to src.
+
+```bash
+
+cd src
+
+```
 
 Inspection of Jupyter Notebooks and ML/DL models can be done by any of the three methods:
 
@@ -343,6 +347,8 @@ First and foremost, we want to extend our deepest gratitude to the vibrant open-
 - [Tom Bonner - A Deep Dive into Security Risks in TensorFlow and Keras](https://hiddenlayer.com/research/models-are-code/)
 - [Security in MLOps Pipeline](https://irmcon.com/blog/security-in-mlops-pipeline/)
 - [A traditional attack vector applied to AI/ML Models](https://5stars217.github.io/2023-03-30-on-malicious-models/)
+- [Pickle Scanner Reference github url ](https://github.com/mmaitre314/picklescan/tree/main)
+- [Pypi Reference url for Pickle Scanner library](https://pypi.org/project/picklescan/)
 
 ... and to many others who have contributed their knowledge on open-source licenses, API key security, MLOps pipeline security, and more.
 

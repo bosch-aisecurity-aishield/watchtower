@@ -15,7 +15,7 @@ from modules import workflow
 # Create an argument parser to handle command-line arguments
 parser = argparse.ArgumentParser(
     description="AIShield.Watchtower: Automatically identify and analyze models and notebooks in a github repository, "
-                "huggingface, S3 bucket or file.")
+                "huggingface, S3 bucket or local file system.")
 parser.add_argument('--repo_type', type=str, help='Repo type github, huggingface, s3 , file or folder')
 parser.add_argument('--repo_url', type=str, help='The URL of the GitHub repository to analyze.')
 parser.add_argument('--target_dir', type=str, default='repo_dir',

@@ -56,9 +56,35 @@ import os
 import re
 import json
 import subprocess
+# from util import utils
 from presidio_analyzer import AnalyzerEngine
 from presidio_analyzer.recognizer_registry import RecognizerRegistry
 
+def filter_unique_packages(lst):
+    """
+    from list with duplicate packages, retain unique packages
+    Parameters
+    ----------
+    lst :
+
+    Returns
+    -------
+
+    """
+    # remove duplicate packages detected
+    unique_packages_dict = {}
+    for package in lst:
+        name = package.split("==")[0]
+        if name in unique_packages_dict:
+            # Retain the versioned package if it exists
+            if '==' in package:
+                unique_packages_dict[name] = package
+        else:
+            unique_packages_dict[name] = package
+
+    # Convert dictionary values to a list for the final result
+    unique_packages = list(unique_packages_dict.values())
+    return unique_packages
 
 def run_command_capture_output(command, directory):
     """
@@ -153,15 +179,27 @@ def extract_packages_from_ipynb_file(filename):
 
         packages_with_versions = []
         for line in content:
-            if 'pip install' in line:
+            # if 'pip install' in line:
+            pattern = r"(?:import\s+(\w+)|from\s+(\w+)\s+import|pip\s+install\s+(\w+))"
+            
+            if 'get_ipython' in line:
                 match = re.search(r"pip install (\S+)'", line)
-                if match:
-                    packages_with_versions.append(match.group(1))
+            else:
+                match = re.search(pattern, line)
+                
+            if match:
+                package_name = match.group(1)
+                if package_name is not None:
+                    packages_with_versions.append(package_name)
+                    
+      
+        # Convert dictionary values to a list for the final result
+        unique_packages = filter_unique_packages(packages_with_versions)
 
-        if len(packages_with_versions) != 0:
+        if len(unique_packages) != 0:
             req_file_name = filename.replace(".py", "") + '_requirements.txt'
             with open(req_file_name, 'w') as file:
-                for package in packages_with_versions:
+                for package in unique_packages:
                     file.write(package + '\n')
 
     except Exception as e:

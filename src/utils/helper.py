@@ -48,7 +48,7 @@ def fetch_scanning_files(repo_type: str, scanning_id: str, repo_url: str = None,
 
     to_be_scanned_files = list()
     save_dir = None
-    extensions = [".h5", ".pkl", ".pb", ".ipynb","requirements.txt"]
+    extensions = ['.h5', '.pb', '.pkl', ".pt", ".pth", ".safetensors", ".bin",".py", ".ipynb","requirements.txt"]
     if (repo_type.lower() == 'github' and (depth >=1 )) or repo_type.lower() == 'huggingface':
         github_clone_dir = github_clone_dir + '_{}'.format(scanning_id)
 
@@ -110,7 +110,7 @@ def fetch_scanning_files(repo_type: str, scanning_id: str, repo_url: str = None,
         
     if repo_type.lower() == 'file':
         if path:
-            if path.endswith((".h5", ".pkl", ".pb", ".ipynb","requirements.txt")):
+            if path.endswith(('.h5', '.pb', '.pkl', ".pt", ".pth", ".safetensors", ".bin", ".py", ".ipynb","requirements.txt")):
                 to_be_scanned_files.append(path)
             elif path.endswith(".zip"):
                 base_path = os.path.dirname(path)
@@ -244,3 +244,4 @@ def check_file_at_given_dir(path: str, file_name: str = 'requirements.txt'):
     if file_name in os.listdir(path):
         file_path = os.path.join(path, file_name)
     return file_path
+

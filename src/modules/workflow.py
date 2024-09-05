@@ -88,6 +88,7 @@ def orchestrator(repo_type: str = 'github', repo_url: str = None, github_clone_d
                                                                     branch_name=branch_name,
                                                                     depth=depth,
                                                                     base_path = base_path)
+        #print("notebook scanning", to_be_scanned_files)
 
         # iterate to get response from each files
         for file in tqdm(to_be_scanned_files):
@@ -97,10 +98,10 @@ def orchestrator(repo_type: str = 'github', repo_url: str = None, github_clone_d
             """TODO : Right now only supported .pkl / .h5 / .pb format model scanning, 
             further release onnx, pt extension model scanning feature will be coming """
 
-            if file.endswith('.h5') or file.endswith(".pkl") or file.endswith('.pb'):
+            if file.endswith('.h5') or file.endswith(".pkl") or file.endswith('.pb') or file.endswith('.safetensors') or file.endswith('.pt') or file.endswith('.pth') or file.endswith('.bin'):
                 dictionary, status = model_inspector.scan(model_path_input=file)
 
-            elif file.endswith('.ipynb'):
+            elif file.endswith('.py') or file.endswith('.ipynb'):
                 dictionary, status = notebook_inspector.scan(file_name=file, requirement_file="")
 
             elif file.endswith('requirements.txt'):
