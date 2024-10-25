@@ -33,9 +33,6 @@ further enhances its market standing by providing advanced security solutions.
   - [Prerequisite](#prerequisite)
   - [Inspect Jupyter Notebooks and Model Using](#prerequisite)
     - [CLI](#cli)
-    - [UI](#ui)
-    - [UI-Docker](#ui-docker)
-  - [Playground](#playground)
 - [Reports](#reports)
 - [Features](#features)
 - [Benefits](#benefits)
@@ -53,8 +50,7 @@ For using AIShield Watchtower, clone Watchtower repo. Install prerequisites and 
 
 ### Prerequisites
 
-- For  running Watchtower in CLI or UI version, python3 and pip should be installed in the host system.
-- For running UI-Docker version, docker and docker-compose should be installed in the host system. For docker users, refer [UI-Docker](#ui-docker)
+- For  running Watchtower in CLI, python3 and pip should be installed in the host system.
 
 Cloning Watchtower repo
 
@@ -127,57 +123,11 @@ python watchtower.py --repo_type=folder --path=<Enter path of Folder>
 
 ---
 
-#### UI
-
-For using Watchtower UI, execute following command
-
-```python
-python watchtower_webapp.py 
-```
-
-open browser and paste: <http://localhost:5015/watchtower-aishield>
-
-![Watchtower UI](./img/AIShield_watchtower_UI.gif)
-
----
-
-#### UI-Docker
-
-For using Watchtower UI, build docker image for Watchtower and run Watchtower image
-
-```bash
-cd watchtower
-docker-compose build 
-docker-compose up 
-```
-
-open browser and paste: <http://localhost:5015/watchtower-aishield>
-
-On successful completion of scan, Watchtower vulnerability reports will be available in reports folder in Watchtower root folder.  
-
-For stopping and removing Watchtower image execute following
-
-```bash
-docker-compose down
-```
-
----
-
-### Playground
-
-For quick getting started, you may try Watchtower Playground by visiting <https://app-watchtower.boschaishield.com>
-
-In the Watchtower Playground, users can scan Notebooks and AI/ML models available in public Github Repos by providing public Github Repo URL. After completion of vulnerability scan, reports will be available to download in the Playground screen.
-
 ## Reports
 
 On successful completion of the Watchtower scan, three reports will be generated in the following path :
 
 - For CLI Mode - all three reports will be available inside the Watchtower src folder. Users may refer last line of the summary report in the console for the complete path of the reports location
-
-- For UI Mode - all three will be reports will be available inside the Watchtower src folder. Users may refer to the success message on the UI to get the path of the reports location
-
-- For UI-Docker Mode - all three reports will be available inside the Watchtower reports folder. Users may refer to the success message on the UI to get the path of the reports location
 
 01. Summary Report - In summary report will provide information on number of model files and notebook files detected, Number of vulnerabilities detected and Count of those vulnerabilities mapped to Critical, High, Medium and low. Sample snippet of Summary Report:
 
@@ -234,7 +184,6 @@ On successful completion of the Watchtower scan, three reports will be generated
 - **Scanning**:Executes thorough scans of the models and notebooks to detect potential safety and security concerns.
 - **Report Generation**: Produces comprehensive reports that classify the scanned files containing "low," "medium,", "high" and "critical" risk.
 - **Supported Repositories** : AIShield Watchtower supports integration with GitHub and AWS S3 buckets, allowing for automated scanning of Git repositories and AWS S3 buckets to identify potential risks.
-- **User Interface (UI)**: Offers an intuitive user interface for conducting repository scans.
 
 ---
 
@@ -293,8 +242,7 @@ On successful completion of the Watchtower scan, three reports will be generated
 
 1. Repositories cloned from GitHub and Hugging Face during watchtower analysis will not be automatically removed
    post-analysis. It is advisable to manually delete these folders found within the 'src' directory.
-
-
+2. The Docker and UI versions of the playground, previously available, have been removed due to a reported [security issue](https://github.com/bosch-aisecurity-aishield/watchtower/issues/28). While these features may be reintroduced in future updates, developers are encouraged to extend the application to create their own UI and Docker deployments.
 ---
 
 ## Contribution
