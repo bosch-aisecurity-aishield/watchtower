@@ -119,8 +119,8 @@ python watchtower.py --repo_type=file --path=<Enter path of File>
 python watchtower.py --repo_type=folder --path=<Enter path of Folder>
 ```
 
-##### To scan the model files (.h5, .pb and .keras)
-To scan the model files in .h5, .pb and .keras format, use the --scan_tf_model argument together with any of the Repo.
+##### To scan the model files (.h5, .pb and .keras) 
+To scan the model files in .h5, .pb and .keras format, use the **--scan_tf_model** argument together with any of the Repo. This is currently supported for Linux OS Systems.
 For Example for github: 
 
 ```python
