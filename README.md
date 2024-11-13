@@ -190,11 +190,23 @@ On successful completion of the Watchtower scan, three reports will be generated
 - **Model and Notebook Detection**: Automatically recognizes AI/ML models and Notebooks within a provided repository. Autodetection of file-formats: .h5, .keras, .pb, .pkl, .safetensors, .pt, .pth, .ckpt, .bin, saved models, .ipynb.
 - **Scanning**:Executes thorough scans of the models and notebooks to detect potential safety and security concerns.
 
-Model Formats: 
-1. [Tensorflow](https://www.tensorflow.org/tutorials/keras/save_and_load#save_the_entire_model) - .pb, .h5 Formats
-2. [Keras](https://keras.io/api/models/model_saving_apis/model_saving_and_loading/#save_model-function) - .h5, .keras Formats
-3. [PyTorch](https://pytorch.org/docs/stable/generated/torch.save.html#torch.save) -.pt, .pth, .bin Formats
-4. Saved models - .ckpt
+Supported Model Formats: 
+
+| Framework         | File Format      | Deserialization       | Backdoor Attacks       | Runtime Threats       |
+|-------------------|------------------|------------------------|-------------------------|------------------------|
+| [Tensorflow](https://www.tensorflow.org/tutorials/keras/save_and_load#save_the_entire_model) | .pb       | ✅               | ✅                        |                        |
+| [Tensorflow](https://www.tensorflow.org/tutorials/keras/save_and_load#save_the_entire_model) | .h5       | ✅               |  ✅                       |                        |
+| [Tensorflow-savedmodel](https://www.tensorflow.org/) | .ckpt    | ✅               |                         |                        |
+| [Keras](https://keras.io/api/models/model_saving_apis/model_saving_and_loading/#save_model-function)         | .keras    | ✅               |  ✅                       |                        |
+| [Keras](https://keras.io/api/models/model_saving_apis/model_saving_and_loading/#save_model-function)         | .h5       | ✅               |  ✅                       |                        |
+| [PyTorch](https://pytorch.org/docs/stable/generated/torch.save.html#torch.save)       | .pt       | ✅               |                         |                        |
+| [PyTorch](https://pytorch.org/docs/stable/generated/torch.save.html#torch.save)       | .pth      | ✅               |                         |                        |
+| [PyTorch](https://pytorch.org/docs/stable/generated/torch.save.html#torch.save)       | .bin      | ✅               |                         |                        |
+| <span style="color:gray">[ONNX](https://onnx.ai/)</span>            | <span style="color:gray">.onnx</span>     | <span style="color:gray"></span>           | <span style="color:gray">✅</span>           | <span style="color:gray"></span>         |
+| <span style="color:gray">[GGUF](https://github.com/ggerganov/ggml)</span>            | <span style="color:gray">.gguf</span>     | <span style="color:gray"></span>           | <span style="color:gray"></span>           | <span style="color:gray">✅</span>         |
+| [Scikit-Learn](https://scikit-learn.org/stable/modules/model_persistence.html) | .pkl      | ✅               |                         |                        |
+| Misc | .zip      | ✅               |                         |                        |
+
 
 - **Report Generation**: Produces comprehensive reports that classify the scanned files containing "low," "medium,", "high" and "critical" risk.
 - **Supported Repositories** : AIShield Watchtower supports integration with GitHub and AWS S3 buckets, allowing for automated scanning of Git repositories and AWS S3 buckets to identify potential risks.
