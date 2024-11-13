@@ -16,7 +16,7 @@ from modules import notebook_inspector, model_inspector
 def orchestrator(repo_type: str = 'github', repo_url: str = None, github_clone_dir: str = "repo_dir",
                  aws_access_key_id: str = None, aws_secret_access_key: str = None, region: str = None,
                  bucket_name: str = None, s3_download_dir: str = 's3_downloads', scanning_id: str = None,
-                 path: str=None, branch_name: str='main', depth: int=1):
+                 path: str=None, branch_name: str='main', depth: int=1, pass_scan_tf_models:  bool = False):
     """
     This Function will work as an orchestrator to clone the given repo provided and fetch what are the files to be
     scanned by watchtower powered by AIShield , and trigger model inspector or notebook inspector according to the
@@ -98,7 +98,11 @@ def orchestrator(repo_type: str = 'github', repo_url: str = None, github_clone_d
             """TODO : Right now only supported .pkl / .h5 / .pb format model scanning, 
             further release onnx, pt extension model scanning feature will be coming """
 
-            if file.endswith('.h5') or file.endswith(".pkl") or file.endswith('.pb') or file.endswith('.safetensors') or file.endswith('.pt') or file.endswith('.pth') or file.endswith('.bin'):
+            if (pass_scan_tf_models):
+                if file.endswith('.h5') or file.endswith(".keras") or file.endswith('.pb'):
+                    dictionary, status = model_inspector.scan(model_path_input=file)
+            
+            if file.endswith(".pkl") or file.endswith('.safetensors') or file.endswith('.pt') or file.endswith('.pth') or file.endswith('.bin'):
                 dictionary, status = model_inspector.scan(model_path_input=file)
 
             elif file.endswith('.py') or file.endswith('.ipynb'):

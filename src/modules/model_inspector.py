@@ -52,6 +52,7 @@ __email__ = "AIShield.Contact@bosch.com"
 __status__ = "Beta"
 
 from utils import model_inspector_util
+from external_files import model_safe_load
 import os
 
 def scan(model_path_input):
@@ -79,23 +80,28 @@ def scan(model_path_input):
     try:
         tool_wise_report = []
         tool_dict = {}
-        if not os.path.isdir(model_path_input):
+        if os.path.isfile(model_path_input):
             # pickle scanner dict
             new_tool_dict = {"tool": "picklescan",
                              'output_log': model_inspector_util.scan_pickle_file(path=model_path_input)}
             # add to list
             tool_wise_report.append(new_tool_dict)
-            
-        if model_path_input.endswith(".h5"):
-            tool_dict["tool"] = "unsafe-check-h5"
-            tool_dict['output_log'] = model_inspector_util.unsafe_check_h5(model_path_input)
+
         # pickle scanner will do .pkl scanning, hence this one is not needed
         # elif model_path_input.endswith(".pkl"):
         #     tool_dict["tool"] = "unsafe-check-pkl"
         #     tool_dict['output_log'] = model_inspector_util.unsafe_check_pkl(model_path_input)
         # assumption: model path is directory, then it will be a .pb based model
+
+        if model_path_input.endswith(".h5"):
+            tool_dict["tool"] = "unsafe-check-h5"
+            tool_dict['output_log'] = model_inspector_util.unsafe_check_h5(model_path_input)
+
+        elif model_path_input.endswith(".keras"):
+            tool_dict["tool"] = "unsafe-check-keras"
+            tool_dict['output_log'] = model_inspector_util.unsafe_check_keras(model_path_input)
+
         elif model_path_input.endswith(".pb"):
-            model_path_input = os.path.dirname(model_path_input)
             tool_dict["tool"] = "unsafe-check-pb"
             tool_dict['output_log'] = model_inspector_util.unsafe_check_pb(model_path_input)
 
@@ -106,10 +112,6 @@ def scan(model_path_input):
                 tool_dict["tool"] = "unsafe-check-safetensors"
                 
             tool_dict['output_log'] = model_inspector_util.unsafe_check_pytorch_safetensors(model_path_input)
-
-        # elif model_path_input.endswith(".safetensors"):
-        #     output["scanning_reports"]["tool"] = "unsafe-check-safetensors"
-        #     output_log = model_inspector_util.unsafe_check_safetensors(model_path_input)
         
         tool_wise_report.append(tool_dict)
         output["scanning_reports"] = tool_wise_report
