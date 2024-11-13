@@ -119,6 +119,14 @@ python watchtower.py --repo_type=file --path=<Enter path of File>
 python watchtower.py --repo_type=folder --path=<Enter path of Folder>
 ```
 
+##### To scan the model files (.h5, .pb and .keras)
+To scan the model files in .h5, .pb and .keras format, use the --scan_tf_model argument together with any of the Repo.
+For Example for github: 
+
+```python
+python watchtower.py --repo_type=<Repo-Type> --repo_url=<Repo-url> --branch_name=<Enter Branch Name> --scan_tf_model
+```
+
 ![Watchtower CLI](./img/AIShield_watchtower_git_cli.gif)
 
 ---
@@ -179,12 +187,17 @@ On successful completion of the Watchtower scan, three reports will be generated
 
 ## Features
 
-- **Model and Notebook Detection**: Automatically recognizes AI/ML models and Notebooks within a provided repository.
-  Supported file format is H5, pickle, saved model, .ipynb
+- **Model and Notebook Detection**: Automatically recognizes AI/ML models and Notebooks within a provided repository. Autodetection of file-formats: .h5, .keras, .pb, .pkl, .safetensors, .pt, .pth, .ckpt, .bin, saved models, .ipynb.
 - **Scanning**:Executes thorough scans of the models and notebooks to detect potential safety and security concerns.
+
+Model Formats: 
+1. [Tensorflow](https://www.tensorflow.org/tutorials/keras/save_and_load#save_the_entire_model) - .pb, .h5 Formats
+2. [Keras](https://keras.io/api/models/model_saving_apis/model_saving_and_loading/#save_model-function) - .h5, .keras Formats
+3. [PyTorch](https://pytorch.org/docs/stable/generated/torch.save.html#torch.save) -.pt, .pth, .bin Formats
+4. Saved models - .ckpt
+
 - **Report Generation**: Produces comprehensive reports that classify the scanned files containing "low," "medium,", "high" and "critical" risk.
 - **Supported Repositories** : AIShield Watchtower supports integration with GitHub and AWS S3 buckets, allowing for automated scanning of Git repositories and AWS S3 buckets to identify potential risks.
-
 ---
 
 ## Benefits
