@@ -50,7 +50,7 @@ if args.repo_type.lower() == "github" or args.repo_type.lower() == "huggingface"
                                                          github_clone_dir=args.target_dir,
                                                          scanning_id=scanning_id,
                                                          branch_name=args.branch_name,
-                                                         depth=args.depth
+                                                         depth=args.depth,
                                                          pass_scan_tf_models=args.scan_tf_models)
     # Check if scanning was successful and print the report path
     if (report_path is not None) and scanning_status:
@@ -64,7 +64,7 @@ elif args.repo_type.lower() == "s3":
                                                          aws_secret_access_key=args.aws_secret_access_key,
                                                          region=args.region, bucket_name=args.bucket_name,
                                                          s3_download_dir=args.s3_downloads,
-                                                         scanning_id=scanning_id
+                                                         scanning_id=scanning_id,
                                                          pass_scan_tf_models=args.scan_tf_models)
     # Check if scanning was successful and print the report path
     if (report_path is not None) and scanning_status:
@@ -77,7 +77,7 @@ elif args.repo_type.lower() == "file" or args.repo_type.lower() == "folder":
     # Call the watchtower.orchestrator function for GitHub repository analysis
     report_path, scanning_status = workflow.orchestrator(repo_type=args.repo_type,
                                                          path=args.path,
-                                                         scanning_id=scanning_id
+                                                         scanning_id=scanning_id,
                                                          pass_scan_tf_models=args.scan_tf_models)
                                                          
 

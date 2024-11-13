@@ -245,13 +245,7 @@ keras_layers_tf_2_16_1 = ['Activation',
  'subtract']
 
 
-# Define a dummy NoOpLayer class to handle unknown layers during model loading
-class NoOpLayer(Layer):
-    def __init__(self, **kwargs):
-        super(NoOpLayer, self).__init__(**kwargs)
 
-    def call(self, inputs):
-        return inputs
 
 
 def contains_pickled_data_direct_scan(h5_file_path: str):
@@ -391,8 +385,8 @@ def unsafe_check_h5(model_path: str):
                 "arbitrary code.")
 
         elif non_keras_layer_detected:
-            tool_output.append("non_keras_layer#Severity:Medium - Potential security concern detected "
-                               "in the model. Non-Keras custom layers can contain arbitrary "
+            tool_output.append("non_keras_layer#Severity:Low - Potential security concern detected "
+                               "in the model. Non-Keras layers can contain arbitrary "
                                "code but require explicit loading.")
             print(
                 "\nPotential security concern detected in the model, Non-Keras custom layers can contain arbitrary "
@@ -450,156 +444,8 @@ def unsafe_check_pb(model_path: str):
         print("Failed to perform safe_load_model_pb_format due to: {}".format(str(e)))
 
     return tool_output
-
-
-def unsafe_check_pytorch_safetensors(model_path: str):
-    """
-        The unsafe_check_pytorch function is designed to examine pytorch models with the .pt or .pth extension for potential vulnerabilities.
-        If any vulnerabilities are detected, it will provide information about the vulnerability along with a severity
-        rating.
-
-        Vulnerability Severity Ratings:
-
-        - High Severity: Lambda or embedded layer found.
-                Reason: Lambda and Embedding layers allow for
-                        arbitrary operations. If an attacker can modify or introduce a lambda function within
-                         a saved model,they can potentially execute any operation when the model is loaded.
-        - Medium Severity: Non-standard layer found.
-                Reason: Non-standard layers, as defined by the unsafe_check_pytorch tool, include layers like 'InputLayer,
-                        ' 'Dense,' 'Activation,' and others. These custom layers or operations, which are not part of
-                        the standard Pytorch library, can introduce vulnerabilities. However, it's important to note
-                        that these custom operations typically require explicit loading, meaning there's an additional
-                         step before potential execution.
-
-        Parameters:
-            - model_path (str): The path to the model file (.pt or .pth) that you want to scan for vulnerabilities.
-
-        Returns:
-            - tool_output (List[str]): A list of vulnerabilities found during the .pt or .pth model scanning process. If
-        no vulnerabilities are found, an empty list will be returned.
-
-        """
-
-    tool_output = list()
-    model_file_path = model_path  # Assigning this so that if none of the transformer loading methods work, load the model using torch.load()
-
-    if model_file_path.endswith(".safetensors"):
-        use_safetensors_file = True
-    else:
-        use_safetensors_file = False
-
-    if os.path.isfile(model_path):
-        model_path = os.path.dirname(model_path)
-
-    # List of suspicious patterns to detect
-    suspicious_patterns = [
-        "execute_command", "os.system", "subprocess.run", "subprocess.Popen",
-        "open(", "eval(", "exec(", "import os", "import subprocess", "pickle.load", "pickle.loads", "joblib.load",
-        "CustomLayer"
-    ]
-    moderate_suspicious_patterns = ["numpy.load"]
-
-    model_classes = [
-        AutoModel,
-        AutoModelForSequenceClassification,
-        AutoModelForTokenClassification,
-        AutoModelForQuestionAnswering,
-        AutoModelForCausalLM,
-        AutoModelForMaskedLM,
-        AutoModelForSeq2SeqLM,
-        AutoModelForMultipleChoice,
-        AutoModelForImageClassification,
-        AutoModelForImageSegmentation,
-        AutoModelForVision2Seq,
-        AutoModelForAudioClassification,
-        AutoModelForDocumentQuestionAnswering,
-    ]
-
-    model = None
-    for model_class in model_classes:
-        try:
-            model = model_class.from_pretrained(model_path, trust_remote_code=True,
-                                                use_safetensors=use_safetensors_file)
-            break  #If model is getting loaded through any of the method, break out of loop with loaded model
-        except Exception as e:
-            if model_class == model_classes[-1]:
-                print(f"Failed to load model using transformer functions, trying it with torch.load(): {e}")
-            else:
-                continue
-
-    # If unable to load the model through transformer function, try to load it using torch.load()
-    if model is None:
-        try:
-            if model_file_path.endswith(('.pt', '.pth')):
-                model = torch.load(model_file_path)
-        except Exception as e:
-            print(f"Failed to load model: {e}")
-
-    if model is None:
-        # tool_output.append("Error loading model#Severity:Low - Unable to load the Model {}")
-        return tool_output
-
-    # List of Standard Pytorch Layers
-    standard_layers = [
-        'Linear', 'Conv2d', 'BatchNorm2d', 'ReLU', 'MaxPool2d', 'AvgPool2d',
-        'AdaptiveAvgPool2d', 'AdaptiveMaxPool2d', 'Dropout', 'Flatten', 'RNN',
-        'LSTM', 'GRU', 'Embedding', 'LayerNorm'  # Included LayerNorm
-    ]
-
-    # Define a list of suspicious layers
-    suspicious_layers = ['Lambda', "CustomLayer"]
-    lambda_suspicious = False
-    not_standard_detected = False
-    high_suspicious_pattern = False
-    moderate_suspicious_pattern = False
-
-    try:
-        for name, layer in model.named_modules():
-            # Check if the layer is not a standard PyTorch module
-            if not isinstance(layer, nn.Module):
-                not_standard_detected = True
-            # print(name)
-            # Check for suspicious layer names
-            if any(susp_layer in name for susp_layer in suspicious_layers):
-                lambda_suspicious = True
-
-            # Check the source code of the forward method
-            if hasattr(layer, 'forward'):
-                try:
-                    function_code = inspect.getsource(layer.forward)
-                    #print("function code to inspect",function_code)
-                    if any(pattern in function_code for pattern in suspicious_patterns):
-                        high_suspicious_pattern = True
-
-                    elif any(pattern in function_code for pattern in moderate_suspicious_patterns):
-                        moderate_suspicious_pattern = True
-                except Exception as e:
-                    print(f"Error inspecting {name}: {str(e)}")
-
-        if lambda_suspicious or high_suspicious_pattern:
-            tool_output.append(
-                "Lambda_or_Custom_layer#Severity:High - Detected Lambda or Custom operations or suspicious pattern in "
-                "layers of pytorch model."
-                "Reason: Lambda or custom layers in PyTorch models allow for arbitrary operations. If an attacker can "
-                "modify or introduce a lambda function within the model after which they can potentially execute any "
-                "operation when the model is loaded or may be high suspicious pattern is found that can execute "
-                "arbitrary code in model"
-            )
-        elif not_standard_detected or moderate_suspicious_pattern:
-            tool_output.append(
-                "Non_Standard_layer#Severity:Medium - Detected non-standard layers in the pytorch model or found any "
-                "moderate suspicious pattern in layers"
-                "Reason: Custom layers or operations that are not part of the standard PyTorch library can introduce "
-                "vulnerabilities. However these custom operations typically require explicit loading which means "
-                "there's"
-                "an additional step before potential execution."
-            )
-
-    except Exception as e:
-        print("Failed to Perform unsafe-check-pytorch due to: {}".format(str(e)))
-
-    return tool_output
-
+    
+# SafeTensor Check
 def unsafe_check_safetensors(model_path: str):
     """
     The unsafe_check_safetensors function is designed to examine safetensors models converted from base pytorch

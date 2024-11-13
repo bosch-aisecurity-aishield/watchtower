@@ -98,11 +98,16 @@ def orchestrator(repo_type: str = 'github', repo_url: str = None, github_clone_d
             """TODO : Right now only supported .pkl / .h5 / .pb format model scanning, 
             further release onnx, pt extension model scanning feature will be coming """
 
-            if (pass_scan_tf_models):
-                if file.endswith('.h5') or file.endswith(".keras") or file.endswith('.pb'):
-                    dictionary, status = model_inspector.scan(model_path_input=file)
             
-            if file.endswith(".pkl") or file.endswith('.safetensors') or file.endswith('.pt') or file.endswith('.pth') or file.endswith('.bin'):
+            if file.endswith('.h5') or file.endswith(".keras") or file.endswith('.pb'):
+                if (pass_scan_tf_models):
+                    dictionary, status = model_inspector.scan(model_path_input=file)
+                else:
+                    tool_dict = {"tool": "unsafe-check-h5-keras-pb", 
+                                 "output_log": "Scanning for this file format is not enabled: Enable using the argument 'scan_tf_models'"}
+                    dictionary, status = tool_dict, True
+        
+            elif file.endswith(".pkl") or file.endswith('.safetensors') or file.endswith('.pt') or file.endswith('.pth') or file.endswith('.bin'):
                 dictionary, status = model_inspector.scan(model_path_input=file)
 
             elif file.endswith('.py') or file.endswith('.ipynb'):
@@ -128,7 +133,8 @@ def orchestrator(repo_type: str = 'github', repo_url: str = None, github_clone_d
             result_dict=detailed_result_json, scanned_files=to_be_scanned_files,
             failed_scan_files=failed_scan_files,
             repo_type=repo_type, repo_url=repo_url,
-            bucket_name=bucket_name)
+            bucket_name=bucket_name,
+            agg_scan_tf_models=pass_scan_tf_models)
 
         # pretty printed json format
         # Saving the summary of the scanned report

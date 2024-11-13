@@ -14,3 +14,4 @@ transformers==4.45.2
 picklescan==0.0.17
 safetensors==0.4.2
 torch==2.5.0
+h5py==3.12.1
