@@ -42,7 +42,7 @@ further enhances its market standing by providing advanced security solutions.
 
 ## Usage
 
-AIShield Watchtower can be used to inspect vulnerabilities in Jupyter notebooks and AI/ML Models (.h5, .pkl and .pb file formats).
+AIShield Watchtower can be used to inspect vulnerabilities in Jupyter notebooks, requirements.txt and AI/ML Models (Ref:[Features](#features)).
 
 For using AIShield Watchtower, clone Watchtower repo. Install prerequisites and scan your notebooks and AI/ML models. Some starting sample test files are available within the Watchtower repo.
 
@@ -82,7 +82,7 @@ cd src
 
 ```
 
-Inspection of Jupyter Notebooks and ML/DL models can be done by any of the three methods:
+Inspection of Jupyter Notebooks and ML/DL models can be done by any of the below methods:
 
 #### CLI
 
