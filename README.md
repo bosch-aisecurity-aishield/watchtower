@@ -92,6 +92,14 @@ To View the available options in CLI mode
 python watchtower.py -h 
 ```
 
+##### To scan the model files (.h5, .pb and .keras) 
+To scan the model files in .h5, .pb and .keras format, use the **--scan_tf_model** argument together with any of the Repo. This is currently supported for Linux OS Systems.
+For Example for github: 
+
+```python
+python watchtower.py --repo_type=<Repo-Type> --repo_url=<Repo-url> --branch_name=<Enter Branch Name> --scan_tf_model
+```
+
 ##### To inspect artifacts present in Public Github Repo
 
 ```python
@@ -117,14 +125,6 @@ python watchtower.py --repo_type=s3 --bucket_name="<Enter Bucket name>" --region
 python watchtower.py --repo_type=file --path=<Enter path of File>
 #Select Repo_type = file for scanning individual file
 python watchtower.py --repo_type=folder --path=<Enter path of Folder>
-```
-
-##### To scan the model files (.h5, .pb and .keras) 
-To scan the model files in .h5, .pb and .keras format, use the **--scan_tf_model** argument together with any of the Repo. This is currently supported for Linux OS Systems.
-For Example for github: 
-
-```python
-python watchtower.py --repo_type=<Repo-Type> --repo_url=<Repo-url> --branch_name=<Enter Branch Name> --scan_tf_model
 ```
 
 ![Watchtower CLI](./img/AIShield_watchtower_git_cli.gif)

@@ -432,13 +432,10 @@ def unsafe_check_pb(model_path: str):
         """
 
     tool_output = list()
-
     model_safe_load.safe_load_model_pb_format(model_path)
 
     try:
-
-        tool_pb_msg = model_safe_load.safe_load_model_pb_format(model_path)
-        tool_output.append(tool_pb_msg)
+        tool_output = model_safe_load.safe_load_model_pb_format(model_path)
 
     except Exception as e:
         print("Failed to perform safe_load_model_pb_format due to: {}".format(str(e)))
