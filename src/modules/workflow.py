@@ -109,8 +109,8 @@ def orchestrator(repo_type: str = 'github', repo_url: str = None, github_clone_d
                     tool_wise_report = list()
 
                     tool_dict = {"tool": "unsafe-check-h5-keras-pb", 
-                                 "output_log": "Scanning for this file format is not enabled: Enable using the argument 'scan_tf_models'"}
-
+                                 "output_log": ["Scanning for this file format is not enabled#:- Enable using the argument scan_tf_models"]}
+                    
                     tool_wise_report.append(tool_dict)
                     output["scanning_reports"] = tool_wise_report
                     dictionary, status = output, scanning_status

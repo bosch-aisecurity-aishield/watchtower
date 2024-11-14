@@ -163,10 +163,11 @@ def model_inspector_result_parser(output: list):
                 for out in output['output_log']:
                     # get the severity from the output
                     severity = out.split("-")[0].split(":")[1].replace(" ", "")
-                    if severity in vulnerability_severity_map:
-                        vulnerability_severity_map[severity] = int(vulnerability_severity_map[severity]) + 1
-                    else:
-                        vulnerability_severity_map[severity] = 1
+                    if(len(severity)>0):
+                        if severity in vulnerability_severity_map:
+                            vulnerability_severity_map[severity] = int(vulnerability_severity_map[severity]) + 1
+                        else:
+                            vulnerability_severity_map[severity] = 1
 
     except Exception as e:
         print("Failed to parse model inspector tool output {}".format(e))
