@@ -31,7 +31,7 @@ further enhances its market standing by providing advanced security solutions.
 
 - [Usage](#usage)
   - [Prerequisite](#prerequisite)
-  - [Inspect Jupyter Notebooks and Model Using](#prerequisite)
+  - [Inspect Jupyter Notebooks and Models Using](#prerequisite)
     - [CLI](#cli)
     - [UI](#ui)
     - [UI-Docker](#ui-docker)
@@ -53,7 +53,9 @@ For using AIShield Watchtower, clone Watchtower repo. Install prerequisites and 
 ### Prerequisites
 
 - For  running Watchtower in CLI or UI version, python3 and pip should be installed in the host system.
-- For running UI-Docker version, docker and docker-compose should be installed in the host system
+- For running UI-Docker version, docker and docker-compose should be installed in the host system.
+> ⚠️ **Warning:** 
+> As a security precaution when using the webapp or the Docker version, it is recommended to scan unknown/untrusted artifacts in a networkless Docker container on the host machine.
 
 Cloning Watchtower repo
 
@@ -133,12 +135,43 @@ python watchtower.py --repo_type=folder --path=<Enter path of Folder>
 ![Watchtower CLI](./img/AIShield_watchtower_git_cli.gif)
 
 ---
+## UI
+For using Watchtower UI, execute the following command:
+```python
+python watchtower_webapp.py
+```
+---
+![Watchtower UI](./img/AIShield_watchtower_UI.png)
+
+## UI-Docker
+
+For using Watchtower UI with Docker, build docker image for watchtower and run watchtower image
+```python
+cd watchtower
+docker-compose build
+docker-compose up
+```
+
+open browser and paste: http://localhost:5015/watchtower-aishield
+
+On successful completion of scan, Watchtower vulnerability reports will be available in reports folder in Watchtower root folder.
+
+For stopping and removing Watchtower image execute following
+
+```python
+docker-compose down
+```
+---
 
 ## Reports
 
 On successful completion of the Watchtower scan, three reports will be generated in the following path :
 
 - For CLI Mode - all three reports will be available inside the Watchtower src folder. Users may refer last line of the summary report in the console for the complete path of the reports location
+
+- For UI Mode - all three will be reports will be available inside the Watchtower src folder. Users may refer to the success message on the UI to get the path of the reports location
+
+- For UI-Docker Mode - all three reports will be available inside the Watchtower reports folder. Users may refer to the success message on the UI to get the path of the reports location
 
 01. Summary Report - In summary report will provide information on number of model files and notebook files detected, Number of vulnerabilities detected and Count of those vulnerabilities mapped to Critical, High, Medium and low. Sample snippet of Summary Report:
 
@@ -190,7 +223,7 @@ On successful completion of the Watchtower scan, three reports will be generated
 
 ## Features
 
-- **Model and Notebook Detection**: Automatically recognizes AI/ML models and Notebooks within a provided repository. Autodetection of file-formats: .h5, .keras, .pb, .pkl, .safetensors, .pt, .pth, .ckpt, .bin, saved models, .ipynb.
+- **Model and Notebook Detection**: Automatically recognizes AI/ML models and Notebooks within a provided repository. 
 - **Scanning**:Executes thorough scans of the models and notebooks to detect potential safety and security concerns.
 
 Supported Model Formats: 
@@ -205,14 +238,15 @@ Supported Model Formats:
 | [PyTorch](https://pytorch.org/docs/stable/generated/torch.save.html#torch.save)       | .pt       | ✅               |                         |                        |
 | [PyTorch](https://pytorch.org/docs/stable/generated/torch.save.html#torch.save)       | .pth      | ✅               |                         |                        |
 | [PyTorch](https://pytorch.org/docs/stable/generated/torch.save.html#torch.save)       | .bin      | ✅               |                         |                        |
-| <span style="color:gray">[ONNX](https://onnx.ai/)</span>            | <span style="color:gray">.onnx</span>     | <span style="color:gray"></span>           | <span style="color:gray">✅</span>           | <span style="color:gray"></span>         |
-| <span style="color:gray">[GGUF](https://github.com/ggerganov/ggml)</span>            | <span style="color:gray">.gguf</span>     | <span style="color:gray"></span>           | <span style="color:gray"></span>           | <span style="color:gray">✅</span>         |
+| <span style="color:gray">[ONNX*](https://onnx.ai/)</span>            | <span style="color:gray">.onnx*</span>     | <span style="color:gray"></span>           | <span style="color:gray">✅</span>           | <span style="color:gray"></span>         |
+| <span style="color:gray">[GGUF*](https://github.com/ggerganov/ggml)</span>            | <span style="color:gray">.gguf*</span>     | <span style="color:gray"></span>           | <span style="color:gray"></span>           | <span style="color:gray">✅</span>         |
 | [Scikit-Learn](https://scikit-learn.org/stable/modules/model_persistence.html) | .pkl      | ✅               |                         |                        |
 | Misc | .zip      | ✅               |                         |                        |
-
+*For more details on these file formats, please write to [AIShield.Contact@in.bosch.com](mailto:AIShield.Contact@in.bosch.com).
 
 - **Report Generation**: Produces comprehensive reports that classify the scanned files containing "low," "medium,", "high" and "critical" risk.
-- **Supported Repositories** : AIShield Watchtower supports integration with GitHub and AWS S3 buckets, allowing for automated scanning of Git repositories and AWS S3 buckets to identify potential risks.
+- **Supported Repositories** : AIShield Watchtower supports integration with GitHub, Huggingface and AWS S3 buckets, allowing for automated scanning of repositories and AWS S3 buckets to identify potential risks.
+
 
 ---
 
@@ -252,13 +286,9 @@ Supported Model Formats:
 
 ## Limitation
 
-1. Support only for public Git and huggingface repository.
-2. Enable AWS S3 bucket support by configuring role-based credentials, where a specialized role is crafted to
-   grant minimal read-only access.
-3. Doesn't support scanning of .pb file from s3 buckets.
-4. Presidio analyser has 1000000 (1GB) has max length. Any data greater than 1GB will not be captured in reports.  
-5. Possible miss-match in severity levels from Whispers library and Watchtower severity levels.
-6. Watchtower application is tested in Ubuntu LTS 22.04.
+1. Limited support for scanning of .pb file from s3 buckets.
+2. Presidio analyser has a max length limit of upto 1000000 (1GB). Any data greater than 1GB will not be captured in reports.  
+3. Possible mismatch in severity levels from Whispers library and Watchtower severity levels.
 
 ### Upcoming Features
 
@@ -269,9 +299,9 @@ Supported Model Formats:
 
 ## Known Issues
 
-1. Repositories cloned from GitHub and Hugging Face during watchtower analysis will not be automatically removed
+1. Repositories cloned from GitHub and Hugging Face during watchtower analysis are not automatically removed
    post-analysis. It is advisable to manually delete these folders found within the 'src' directory.
-2. The Docker and UI versions of the playground, previously available, have been removed due to a reported [security issue](https://github.com/bosch-aisecurity-aishield/watchtower/issues/28). While these features may be reintroduced in future updates, developers are encouraged to extend the application to create their own UI and Docker deployments.
+
 ---
 
 ## Contribution
