@@ -439,6 +439,7 @@ def unsafe_check_pb(model_path: str):
 
     except Exception as e:
         print("Failed to perform safe_load_model_pb_format due to: {}".format(str(e)))
+        tool_output.append("Error loading model#Severity:Low - Unable to load the Model {}".format(str(e)))
 
     return tool_output
     

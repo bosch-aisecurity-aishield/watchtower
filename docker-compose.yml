@@ -1,0 +1,17 @@
+version: "3.2"
+services:
+  watchtower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: watchtower:latest
+    container_name: 'watchtower'
+    ports:
+      - 5015:5015
+    volumes:
+      - ./reports/scanned_reports/:/app/scanned_reports/
+    networks:
+      - local_watchtower
+networks:
+  local_watchtower:
+    driver: bridge
