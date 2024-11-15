@@ -52,7 +52,8 @@ def create_aggregator_report(result_dict: dict, scanned_files: list,
                              failed_scan_files: list,
                              repo_type: str,
                              repo_url: str = None,
-                             bucket_name: str = None):
+                             bucket_name: str = None,
+                             agg_scan_tf_models:  bool = False):
     """
         This function will summarize and consolidated the detailed scanned result a quick overview format
         like how many model and notebook files were found for scanning and how-many file scanned by
@@ -87,22 +88,34 @@ def create_aggregator_report(result_dict: dict, scanned_files: list,
         for file in scanned_files:
             if file.endswith(".h5"):
                 count = count + 1
-        number_of_model_files = sum(1 for file in scanned_files if file.endswith(".h5") or file.endswith(".pb")
+
+
+        number_of_model_files = sum(1 for file in scanned_files if file.endswith(".h5") or file.endswith(".pb") or file.endswith(".keras")
                                     or file.endswith(".pkl")or file.endswith(".pt")or file.endswith(".pth") or file.endswith(".safetensors")or file.endswith(".bin"))
+       
         number_of_notebooks = sum(1 for file in scanned_files if file.endswith(".ipynb") or file.endswith('.py'))
         number_of_requirement_file = sum(1 for file in scanned_files if file.endswith("requirements.txt"))
 
         aggregator_result_dict["Total Number of Model Found"] = number_of_model_files
         aggregator_result_dict[
-            "Total Number of Notebooks & Requirement files Found"] = number_of_notebooks + number_of_requirement_file
-
+            "Total Number of Notebooks & Requirement files Found"] = number_of_notebooks + number_of_requirement_file   
+            
         number_of_model_files_failed = sum(
-            1 for file in failed_scan_files if file.endswith(".h5") or file.endswith(".pb")or file.endswith(".pt")or file.endswith(".pth") or file.endswith(".safetensors")or file.endswith(".bin"))
+            1 for file in failed_scan_files if file.endswith(".h5") or file.endswith(".pb") or file.endswith(".keras")
+                    or file.endswith(".pkl") or file.endswith(".pt")or file.endswith(".pth") or file.endswith(".safetensors")or file.endswith(".bin"))
+
         number_of_notebooks_failed = sum(1 for file in failed_scan_files if file.endswith(".ipynb")or file.endswith(".py"))
         number_of_requirement_file_failed = sum(1 for file in failed_scan_files if file.endswith(".requirements.txt"))
 
-        # calculate number of model failed to scan
-        aggregator_result_dict["Total Number of Model Scanned"] = number_of_model_files - number_of_model_files_failed
+        # when the flag is NOT set, (.h5,.pb and .keras) models are NOT scanned
+        if not agg_scan_tf_models:
+            number_of_unscanned_tf_files = sum(1 for file in scanned_files if file.endswith(".h5") or file.endswith(".pb") or file.endswith(".keras"))      
+            
+        # calculate number of model scanned
+        if agg_scan_tf_models:
+            aggregator_result_dict["Total Number of Model Scanned"] = number_of_model_files - number_of_model_files_failed
+        else:
+            aggregator_result_dict["Total Number of Model Scanned"] = number_of_model_files - number_of_model_files_failed - number_of_unscanned_tf_files
         # calculate number of notebooks failed to scan
         aggregator_result_dict["Total Number of Notebooks & Requirement files Scanned"] = (
                                                                                                       number_of_notebooks + number_of_requirement_file) - (
@@ -150,10 +163,11 @@ def model_inspector_result_parser(output: list):
                 for out in output['output_log']:
                     # get the severity from the output
                     severity = out.split("-")[0].split(":")[1].replace(" ", "")
-                    if severity in vulnerability_severity_map:
-                        vulnerability_severity_map[severity] = int(vulnerability_severity_map[severity]) + 1
-                    else:
-                        vulnerability_severity_map[severity] = 1
+                    if(len(severity)>0):
+                        if severity in vulnerability_severity_map:
+                            vulnerability_severity_map[severity] = int(vulnerability_severity_map[severity]) + 1
+                        else:
+                            vulnerability_severity_map[severity] = 1
 
     except Exception as e:
         print("Failed to parse model inspector tool output {}".format(e))

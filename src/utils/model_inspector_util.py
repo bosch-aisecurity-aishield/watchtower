@@ -56,12 +56,17 @@ import os
 import h5py
 import base64
 import inspect
+import zipfile
+import json
+
 from picklescan import scanner
-from tensorflow import keras
-from keras.layers import Layer, Lambda
 import torch
 import torch.nn as nn
 from safetensors import safe_open
+
+# load external files for safe model load (.h5, .pb, .keras)
+from external_files import model_safe_load
+
 from transformers import (
     AutoModel,
     AutoModelForSequenceClassification,
@@ -78,116 +83,169 @@ from transformers import (
     AutoModelForDocumentQuestionAnswering
 )
 
-# Suppress TensorFlow warnings
-import tensorflow as tf
 
-tf.get_logger().setLevel('ERROR')
+# list of keras official layers (From Tensorflow 2.16.1)
+keras_layers_tf_2_16_1 = ['Activation',
+ 'ActivityRegularization',
+ 'Add',
+ 'AdditiveAttention',
+ 'AlphaDropout',
+ 'Attention',
+ 'AutoContrast',
+ 'Average',
+ 'AveragePooling1D',
+ 'AveragePooling2D',
+ 'AveragePooling3D',
+ 'AvgPool1D',
+ 'AvgPool2D',
+ 'AvgPool3D',
+ 'BatchNormalization',
+ 'Bidirectional',
+ 'CategoryEncoding',
+ 'CenterCrop',
+ 'Concatenate',
+ 'Conv1D',
+ 'Conv1DTranspose',
+ 'Conv2D',
+ 'Conv2DTranspose',
+ 'Conv3D',
+ 'Conv3DTranspose',
+ 'ConvLSTM1D',
+ 'ConvLSTM2D',
+ 'ConvLSTM3D',
+ 'Convolution1D',
+ 'Convolution1DTranspose',
+ 'Convolution2D',
+ 'Convolution2DTranspose',
+ 'Convolution3D',
+ 'Convolution3DTranspose',
+ 'Cropping1D',
+ 'Cropping2D',
+ 'Cropping3D',
+ 'Dense',
+ 'DepthwiseConv1D',
+ 'DepthwiseConv2D',
+ 'Discretization',
+ 'Dot',
+ 'Dropout',
+ 'ELU',
+ 'EinsumDense',
+ 'Embedding',
+ 'Flatten',
+ 'FlaxLayer',
+ 'GRU',
+ 'GRUCell',
+ 'GaussianDropout',
+ 'GaussianNoise',
+ 'GlobalAveragePooling1D',
+ 'GlobalAveragePooling2D',
+ 'GlobalAveragePooling3D',
+ 'GlobalAvgPool1D',
+ 'GlobalAvgPool2D',
+ 'GlobalAvgPool3D',
+ 'GlobalMaxPool1D',
+ 'GlobalMaxPool2D',
+ 'GlobalMaxPool3D',
+ 'GlobalMaxPooling1D',
+ 'GlobalMaxPooling2D',
+ 'GlobalMaxPooling3D',
+ 'GroupNormalization',
+ 'GroupQueryAttention',
+ 'HashedCrossing',
+ 'Hashing',
+ 'Identity',
+ 'Input',
+ 'InputLayer',
+ 'InputSpec',
+ 'IntegerLookup',
+ 'JaxLayer',
+ 'LSTM',
+ 'LSTMCell',
+ 'Lambda',
+ 'Layer',
+ 'LayerNormalization',
+ 'LeakyReLU',
+ 'Masking',
+ 'MaxPool1D',
+ 'MaxPool2D',
+ 'MaxPool3D',
+ 'MaxPooling1D',
+ 'MaxPooling2D',
+ 'MaxPooling3D',
+ 'Maximum',
+ 'MelSpectrogram',
+ 'Minimum',
+ 'MultiHeadAttention',
+ 'Multiply',
+ 'Normalization',
+ 'PReLU',
+ 'Permute',
+ 'Pipeline',
+ 'RNN',
+ 'RandomBrightness',
+ 'RandomContrast',
+ 'RandomCrop',
+ 'RandomFlip',
+ 'RandomHeight',
+ 'RandomRotation',
+ 'RandomTranslation',
+ 'RandomWidth',
+ 'RandomZoom',
+ 'ReLU',
+ 'RepeatVector',
+ 'Rescaling',
+ 'Reshape',
+ 'Resizing',
+ 'SeparableConv1D',
+ 'SeparableConv2D',
+ 'SeparableConvolution1D',
+ 'SeparableConvolution2D',
+ 'SimpleRNN',
+ 'SimpleRNNCell',
+ 'Softmax',
+ 'Solarization',
+ 'SpatialDropout1D',
+ 'SpatialDropout2D',
+ 'SpatialDropout3D',
+ 'SpectralNormalization',
+ 'StackedRNNCells',
+ 'StringLookup',
+ 'Subtract',
+ 'TFSMLayer',
+ 'TextVectorization',
+ 'ThresholdedReLU',
+ 'TimeDistributed',
+ 'TorchModuleWrapper',
+ 'UnitNormalization',
+ 'UpSampling1D',
+ 'UpSampling2D',
+ 'UpSampling3D',
+ 'Wrapper',
+ 'ZeroPadding1D',
+ 'ZeroPadding2D',
+ 'ZeroPadding3D',
+ '__builtins__',
+ '__cached__',
+ '__doc__',
+ '__file__',
+ '__loader__',
+ '__name__',
+ '__package__',
+ '__path__',
+ '__spec__',
+ 'add',
+ 'average',
+ 'concatenate',
+ 'deserialize',
+ 'dot',
+ 'maximum',
+ 'minimum',
+ 'multiply',
+ 'serialize',
+ 'subtract']
 
 
-# Define a dummy NoOpLayer class to handle unknown layers during model loading
-class NoOpLayer(Layer):
-    def __init__(self, **kwargs):
-        super(NoOpLayer, self).__init__(**kwargs)
 
-    def call(self, inputs):
-        return inputs
-
-
-# Function to extract layer names from a .h5 model file
-def extract_layers_from_h5(model_file_path):
-    """
-        Extracts the names of layers from an .h5 model file.
-
-        This function reads an HDF5 model file, extracts the layer names from its model configuration,
-        and returns a list of layer names. It is commonly used for inspecting the architecture of a
-        saved Keras or TensorFlow model.
-
-        Parameters:
-            model_file_path (str): The path to the h5 model file .
-
-        Returns:
-            list: A list of layer names extracted from the model configuration.
-
-        Raises:
-            ValueError: If the model configuration is not found in the .h5 file.
-    """
-
-    layers = []
-
-    try:
-        with h5py.File(model_file_path, 'r') as f:
-            model_config = f.attrs.get('model_config')
-            if model_config is None:
-                raise ValueError("Model config not found in the .h5 file.")
-
-            # Decode model_config if it's in bytes
-            if isinstance(model_config, bytes):
-                model_config = model_config.decode('utf-8')
-
-            # Replace certain strings for Python compatibility
-            model_config = model_config.replace("null", "None").replace("false", "False").replace("true", "True")
-
-            model_config = eval(model_config)
-            for layer_config in model_config['config']['layers']:
-                layers.append(layer_config['class_name'])
-    except Exception as e:
-        print("Error in Extracting Layers from Model due to {}".format(str(e)))
-
-    return layers
-
-
-def get_custom_objects(layers):
-    """
-    Get custom layer objects from a list of layer names.
-
-    This function takes a list of layer names and returns a dictionary of custom layer objects.
-    Custom layers are typically defined by the user and may not be included in the default Keras
-    layers. The dictionary maps layer names to their corresponding custom layer objects.
-
-    Parameters:
-        layers (list): A list of layer names for which custom objects are to be retrieved.
-
-    Returns:
-        dict: A dictionary mapping layer names to custom layer objects.
-    """
-
-    custom_objects = {}
-
-    try:
-        keras_layers = dir(keras.layers)
-
-        for layer in layers:
-            if layer not in keras_layers:
-                custom_objects[layer] = NoOpLayer
-    except Exception as e:
-        print("Error in Extracting Custom Objects from Model due to {}".format(str(e)))
-
-    return custom_objects
-
-
-def load_model(model_file_path: str):
-    """
-    Description: Load the model from file path
-
-    Parameters:
-    - model_file_path(str): Model file full-path
-
-
-    Returns:
-    - model: Loaded model object or None if there's an error
-    """
-    model = None
-
-    # Extract layers from the model file and populate custom_objects
-    layers = extract_layers_from_h5(model_file_path)
-    custom_objects = get_custom_objects(layers)
-
-    try:
-        model = keras.models.load_model(model_file_path, custom_objects=custom_objects, compile=False)
-    except Exception as e:
-        print("Error loading model: {}".format(str(e)))
-
-    return model
 
 
 def contains_pickled_data_direct_scan(h5_file_path: str):
@@ -290,6 +348,7 @@ def unsafe_check_h5(model_path: str):
     lambda_layer_detected = None
     lambda_suspicious_detected = False
     moderate_lamda_suspicious_detected = False
+    unsafe_layer_detected = False
  
     try:
        
@@ -299,61 +358,35 @@ def unsafe_check_h5(model_path: str):
             "open(", "eval(", "exec(", "import os", "import subprocess", "pickle.load", "pickle.loads", "joblib.load"
         ]
         moderate_suspicious_patterns = ["numpy.load"]
-       
-        # Try loading the model without custom objects
-        model = load_model(model_path)
- 
-        if model is not None:
-            for layer in model.layers:
-                if isinstance(layer, Lambda):
-                    # lambda_layer_detected = True
-                    lambda_function = layer.function
-                    base64_encoded_function_string = layer.get_config()["function"][0]
-                    decoded_bytes = base64.b64decode(base64_encoded_function_string).decode('utf-8', errors='ignore')
-                    if any(pattern in decoded_bytes for pattern in suspicious_patterns):
-                        lambda_suspicious_detected = True
-                    if any(pattern in decoded_bytes for pattern in moderate_suspicious_patterns):
-                        moderate_lamda_suspicious_detected = True
-                    break
-         
+    
+        # Replaced with safe load functions
+        h5_layers, unsafe_h5_layers  = model_safe_load.safe_load_model_h5_format(model_path)
+
+        if (unsafe_h5_layers): #list is not empty
+            unsafe_layer_detected = True
+        
         # Check for pickled data in the .h5 file
         magic_number_detected_status = contains_pickled_data_direct_scan(model_path)
  
-        # Check for non-Keras layers
-        non_keras_layer_detected = any(not hasattr(keras.layers, type(layer).__name__) for layer in model.layers)
+        # non_keras_layer_detected = any(not hasattr(keras.layers, type(layer).__name__) for layer in model.layers)
+        non_keras_layer_detected = not any(layer in keras_layers_tf_2_16_1 for layer in h5_layers)
  
         # If magic numbers are detected OR a suspicious Lambda layer is detected OR a non-Keras layer is detected,
         # flag the file
         if magic_number_detected_status:
             tool_output.append("magic_number_detected#Severity:High - Potential security concern detected "
                                "in the model. Pickle can execute arbitrary code")
- 
-        # elif lambda_layer_detected:
-        #     tool_output.append("lambda_suspicious#Severity:High - Potential security concern detected "
-        #                        "in the model. Lambda layers can execute arbitrary code")
- 
- 
-        # elif lambda_suspicious_detected and moderate_lamda_suspicious_detected:
-        #     tool_output.append("lambda_suspicious#Severity:High - Potential security concern detected "
-        #                         "in the model, Lambda layers can execute arbitrary code")
-        #     print(
-        #         "\nPotential security concern detected in the model.Lambda layers can execute "
-        #         "arbitrary code.")
-        elif lambda_suspicious_detected:
+
+        elif unsafe_layer_detected:
             tool_output.append("lambda_suspicious#Severity:High - Potential security concern detected "
-                                "in the model, Lambda layers can execute arbitrary code")
+                                "in the model, unsafe layers such as Lambda or Custom can execute arbitrary code")
             print(
                 "\nPotential security concern detected in the model.Lambda layers can execute "
                 "arbitrary code.")
-        elif moderate_lamda_suspicious_detected:
-            tool_output.append("lambda_suspicious#Severity:Medium - Potential security concern detected "
-                                "in the model, Lambda layers can execute arbitrary code")
-            print(
-                "\nPotential security concern detected in the model.Lambda layers can execute "
-                "arbitrary code.")
+
         elif non_keras_layer_detected:
-            tool_output.append("non_keras_layer#Severity:Medium - Potential security concern detected "
-                               "in the model. Non-Keras custom layers can contain arbitrary "
+            tool_output.append("non_keras_layer#Severity:Low - Potential security concern detected "
+                               "in the model. Non-Keras layers can contain arbitrary "
                                "code but require explicit loading.")
             print(
                 "\nPotential security concern detected in the model, Non-Keras custom layers can contain arbitrary "
@@ -376,7 +409,6 @@ def unsafe_check_h5(model_path: str):
 
 
 # Function to scan a model and return a JSON report
-
 def unsafe_check_pb(model_path: str):
     """
         The unsafe_check_pb function is designed to examine models with the .pb extension for potential vulnerabilities.
@@ -385,16 +417,10 @@ def unsafe_check_pb(model_path: str):
 
         Vulnerability Severity Ratings:
 
-        - High Severity: Lambda or embedded layer found.
-                Reason: Lambda and Embedding layers in TensorFlow allow for
+        - High Severity: Lambda or custom layer found.
+                Reason: Lambda and Custom layers in TensorFlow allow for
                         arbitrary operations. If an attacker can modify or introduce a lambda function within
                          a saved model,they can potentially execute any operation when the model is loaded.
-        - Medium Severity: Non-standard layer found.
-                Reason: Non-standard layers, as defined by the unsafe_check_pb tool, include layers like 'InputLayer,
-                        ' 'Dense,' 'Activation,' and others. These custom layers or operations, which are not part of
-                        the standard TensorFlow library, can introduce vulnerabilities. However, it's important to note
-                        that these custom operations typically require explicit loading, meaning there's an additional
-                         step before potential execution.
 
         Parameters:
             - model_path (str): The path to the model file (.pb) that you want to scan for vulnerabilities.
@@ -406,194 +432,17 @@ def unsafe_check_pb(model_path: str):
         """
 
     tool_output = list()
+    model_safe_load.safe_load_model_pb_format(model_path)
 
     try:
-        model = tf.keras.models.load_model(model_path)
+        tool_output = model_safe_load.safe_load_model_pb_format(model_path)
+
     except Exception as e:
-        print(f"Error loading model: {e}")
-        # tool_output.append("Error loading model#Severity:Low - Unable to load the Model {}".format(str(e)))
-        return tool_output
-
-    # List of standard TensorFlow layers
-    standard_layers = ['InputLayer', 'Dense', 'Activation', 'Dropout', 'Flatten', 'BatchNormalization',
-                       'Conv2D', 'MaxPooling2D', 'AveragePooling2D', 'GlobalAveragePooling2D', 'GlobalMaxPooling2D',
-                       'Embedding', 'LSTM', 'GRU', 'SimpleRNN', 'TimeDistributed', 'Bidirectional', 'SeparableConv2D',
-                       'DepthwiseConv2D', 'UpSampling2D', 'Reshape', 'Permute', 'RepeatVector', 'SpatialDropout2D',
-                       'Conv2DTranspose', 'ConvLSTM2D', 'Masking', 'ZeroPadding2D', 'Cropping2D', 'AlphaDropout',
-                       'GaussianNoise', 'GaussianDropout', 'RNN', 'LocallyConnected1D', 'LocallyConnected2D']
-
-    # Define a list of suspicious layers
-    suspicious_layers = ['Embedding', 'Lambda']
-
-    try:
-
-        # Check for Lambda layers (High Severity)
-        if any([layer.__class__.__name__ in suspicious_layers for layer in model.layers]):
-            tool_output.append("Lamda_or_Embedding_layer#Severity:High - Detected Lambda operations in the .pb model."
-                               "Reason: Lambda/ Embedding layers in TensorFlow allow for arbitrary operations. If an "
-                               "attacker can modify or introduce a lambda function within a saved model after which "
-                               "they can potentially execute any operation when the model is loaded.")
-
-        elif any([layer.__class__.__name__ not in standard_layers for layer in model.layers]):
-            tool_output.append("Non_Standard_layer#Severity:Medium - Detected non-standard layers in the .pb model."
-                               "Reason: Custom layers or operations that are not part of the standard TensorFlow "
-                               "library can introduce vulnerabilities. However these custom operations typically "
-                               " require explicit loading which means there's an additional step before potential "
-                               "execution.")
-    except Exception as e:
-        print("Failed to Perform unsafe-check-pb due to: {}".format(str(e)))
+        print("Failed to perform safe_load_model_pb_format due to: {}".format(str(e)))
 
     return tool_output
-
-
-def unsafe_check_pytorch_safetensors(model_path: str):
-    """
-        The unsafe_check_pytorch function is designed to examine pytorch models with the .pt or .pth extension for potential vulnerabilities.
-        If any vulnerabilities are detected, it will provide information about the vulnerability along with a severity
-        rating.
-
-        Vulnerability Severity Ratings:
-
-        - High Severity: Lambda or embedded layer found.
-                Reason: Lambda and Embedding layers allow for
-                        arbitrary operations. If an attacker can modify or introduce a lambda function within
-                         a saved model,they can potentially execute any operation when the model is loaded.
-        - Medium Severity: Non-standard layer found.
-                Reason: Non-standard layers, as defined by the unsafe_check_pytorch tool, include layers like 'InputLayer,
-                        ' 'Dense,' 'Activation,' and others. These custom layers or operations, which are not part of
-                        the standard Pytorch library, can introduce vulnerabilities. However, it's important to note
-                        that these custom operations typically require explicit loading, meaning there's an additional
-                         step before potential execution.
-
-        Parameters:
-            - model_path (str): The path to the model file (.pt or .pth) that you want to scan for vulnerabilities.
-
-        Returns:
-            - tool_output (List[str]): A list of vulnerabilities found during the .pt or .pth model scanning process. If
-        no vulnerabilities are found, an empty list will be returned.
-
-        """
-
-    tool_output = list()
-    model_file_path = model_path  # Assigning this so that if none of the transformer loading methods work, load the model using torch.load()
-
-    if model_file_path.endswith(".safetensors"):
-        use_safetensors_file = True
-    else:
-        use_safetensors_file = False
-
-    if os.path.isfile(model_path):
-        model_path = os.path.dirname(model_path)
-
-    # List of suspicious patterns to detect
-    suspicious_patterns = [
-        "execute_command", "os.system", "subprocess.run", "subprocess.Popen",
-        "open(", "eval(", "exec(", "import os", "import subprocess", "pickle.load", "pickle.loads", "joblib.load",
-        "CustomLayer"
-    ]
-    moderate_suspicious_patterns = ["numpy.load"]
-
-    model_classes = [
-        AutoModel,
-        AutoModelForSequenceClassification,
-        AutoModelForTokenClassification,
-        AutoModelForQuestionAnswering,
-        AutoModelForCausalLM,
-        AutoModelForMaskedLM,
-        AutoModelForSeq2SeqLM,
-        AutoModelForMultipleChoice,
-        AutoModelForImageClassification,
-        AutoModelForImageSegmentation,
-        AutoModelForVision2Seq,
-        AutoModelForAudioClassification,
-        AutoModelForDocumentQuestionAnswering,
-    ]
-
-    model = None
-    for model_class in model_classes:
-        try:
-            model = model_class.from_pretrained(model_path, trust_remote_code=True,
-                                                use_safetensors=use_safetensors_file)
-            break  #If model is getting loaded through any of the method, break out of loop with loaded model
-        except Exception as e:
-            if model_class == model_classes[-1]:
-                print(f"Failed to load model using transformer functions, trying it with torch.load(): {e}")
-            else:
-                continue
-
-    # If unable to load the model through transformer function, try to load it using torch.load()
-    if model is None:
-        try:
-            if model_file_path.endswith(('.pt', '.pth')):
-                model = torch.load(model_file_path)
-        except Exception as e:
-            print(f"Failed to load model: {e}")
-
-    if model is None:
-        # tool_output.append("Error loading model#Severity:Low - Unable to load the Model {}")
-        return tool_output
-
-    # List of Standard Pytorch Layers
-    standard_layers = [
-        'Linear', 'Conv2d', 'BatchNorm2d', 'ReLU', 'MaxPool2d', 'AvgPool2d',
-        'AdaptiveAvgPool2d', 'AdaptiveMaxPool2d', 'Dropout', 'Flatten', 'RNN',
-        'LSTM', 'GRU', 'Embedding', 'LayerNorm'  # Included LayerNorm
-    ]
-
-    # Define a list of suspicious layers
-    suspicious_layers = ['Lambda', "CustomLayer", "SuspiciousModel"]
-    lambda_suspicious = False
-    not_standard_detected = False
-    high_suspicious_pattern = False
-    moderate_suspicious_pattern = False
-
-    try:
-        for name, layer in model.named_modules():
-            # Check if the layer is not a standard PyTorch module
-            if not isinstance(layer, nn.Module):
-                not_standard_detected = True
-            # print(name)
-            # Check for suspicious layer names
-            if any(susp_layer in name for susp_layer in suspicious_layers):
-                lambda_suspicious = True
-
-            # Check the source code of the forward method
-            if hasattr(layer, 'forward'):
-                try:
-                    function_code = inspect.getsource(layer.forward)
-                    #print("function code to inspect",function_code)
-                    if any(pattern in function_code for pattern in suspicious_patterns):
-                        high_suspicious_pattern = True
-
-                    elif any(pattern in function_code for pattern in moderate_suspicious_patterns):
-                        moderate_suspicious_pattern = True
-                except Exception as e:
-                    print(f"Error inspecting {name}: {str(e)}")
-
-        if lambda_suspicious or high_suspicious_pattern:
-            tool_output.append(
-                "Lambda_or_Custom_layer#Severity:High - Detected Lambda or Custom operations or suspicious pattern in "
-                "layers of pytorch model."
-                "Reason: Lambda or custom layers in PyTorch models allow for arbitrary operations. If an attacker can "
-                "modify or introduce a lambda function within the model after which they can potentially execute any "
-                "operation when the model is loaded or may be high suspicious pattern is found that can execute "
-                "arbitrary code in model"
-            )
-        elif not_standard_detected or moderate_suspicious_pattern:
-            tool_output.append(
-                "Non_Standard_layer#Severity:Medium - Detected non-standard layers in the pytorch model or found any "
-                "moderate suspicious pattern in layers"
-                "Reason: Custom layers or operations that are not part of the standard PyTorch library can introduce "
-                "vulnerabilities. However these custom operations typically require explicit loading which means "
-                "there's"
-                "an additional step before potential execution."
-            )
-
-    except Exception as e:
-        print("Failed to Perform unsafe-check-pytorch due to: {}".format(str(e)))
-
-    return tool_output
-
+    
+# SafeTensor Check
 def unsafe_check_safetensors(model_path: str):
     """
     The unsafe_check_safetensors function is designed to examine safetensors models converted from base pytorch
@@ -739,3 +588,4 @@ def scan_pickle_file(path: str):
     # pickle_scan_result.scan_err
 
     return results
+# %%
