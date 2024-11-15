@@ -33,6 +33,8 @@ further enhances its market standing by providing advanced security solutions.
   - [Prerequisite](#prerequisite)
   - [Inspect Jupyter Notebooks and Model Using](#prerequisite)
     - [CLI](#cli)
+    - [UI](#ui)
+    - [UI-Docker](#ui-docker)
 - [Reports](#reports)
 - [Features](#features)
 - [Benefits](#benefits)
@@ -50,7 +52,8 @@ For using AIShield Watchtower, clone Watchtower repo. Install prerequisites and 
 
 ### Prerequisites
 
-- For  running Watchtower in CLI, python3 and pip should be installed in the host system.
+- For  running Watchtower in CLI or UI version, python3 and pip should be installed in the host system.
+- For running UI-Docker version, docker and docker-compose should be installed in the host system
 
 Cloning Watchtower repo
 
