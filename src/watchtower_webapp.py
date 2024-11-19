@@ -113,6 +113,10 @@ def index():
         branch_name = request.form.get('branch')
         depth = request.form.get('depth')
         path = request.form.get('path')
+        base_path = os.getcwd()
+        # check path is within or outside the base path
+        if not os.path.abspath(path).startswith(os.path.abspath(base_path)):
+            raise Exception ("Target directory is outside the base path!")  
         
         if (depth is None) or (not depth):
             depth=1
@@ -143,11 +147,6 @@ def index():
             repo_type = request.form.get('file_type')
             if not path:
                 errors.append("Path is required.")
-
-        base_path = os.getcwd()
-        # check path is within or outside the base path
-        if not os.path.abspath(path).startswith(os.path.abspath(base_path)):
-            errors.append("Target directory is outside the base path!")                
 
         if errors:
             for error in errors:
