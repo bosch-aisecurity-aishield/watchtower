@@ -13,6 +13,7 @@ __status__ = "Beta"
 import datetime
 from modules import workflow
 from flask import Flask, render_template, request, flash
+import os
 
 # Importing necessary modules
 app = Flask(__name__)
@@ -142,7 +143,11 @@ def index():
             repo_type = request.form.get('file_type')
             if not path:
                 errors.append("Path is required.")
-                
+
+        base_path = os.getcwd()
+        # check path is within or outside the base path
+        if not os.path.abspath(path).startswith(os.path.abspath(base_path)):
+            errors.append("Target directory is outside the base path!")                
 
         if errors:
             for error in errors:
