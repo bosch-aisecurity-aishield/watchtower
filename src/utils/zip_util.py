@@ -1,7 +1,15 @@
 import os
 import shutil
-import requests
 from zipfile import ZipFile, BadZipFile
+
+def is_safe_path(base_path, path):
+    # To resolve the canonical path safely
+    try:
+        base_path = os.path.realpath(base_path)
+        path = os.path.realpath(path)
+        return True
+    except Exception as e:
+        return False
 
 def list_files(base_path: str, target_path: str, extensions: list):
     # List to hold the paths of all files matching the given extension
@@ -55,19 +63,38 @@ def remove_directories_with_hidden_files(base_path,root_path):
     for root, dirs, files in os.walk(root_path, topdown=False):
         for directory in dirs:
             dir_path = os.path.join(root, directory)
-            dir_files = os.listdir(dir_path)
+            if is_safe_path(base_path, dir_path):
+                try:
+                    dir_files = os.listdir(dir_path)
+                except Exception as e:
+                    print(f"Error accessing {dir_path}: {e}")
+            else:
+                print(f"Access denied: {dir_path}")
 
             # Check if all files in the directory start with a dot
             if all(file.startswith('.') for file in dir_files):
-                shutil.rmtree(dir_path)
+                if is_safe_path(base_path, dir_path):
+                    try:
+                        shutil.rmtree(dir_path)
+                    except Exception as e:
+                        print(f"Error accessing {dir_path}: {e}")
+                else:
+                    print(f"Access denied: {dir_path}")
                 #logger.info("{} : Directory {} removed successfully.".format(logger_name, dir_path))
             else:
                 # Check and delete only files starting with a dot
                 dot_files = [file for file in dir_files if file.startswith('.')]
                 for dot_file in dot_files:
                     dot_file_path = os.path.join(dir_path, dot_file)
-                    os.remove(dot_file_path)
-                    #logger.info("{} : File {} removed successfully.".format(logger_name, dot_file_path))
+
+                if is_safe_path(base_path, dot_file_path):
+                    try:
+                        os.remove(dot_file_path)
+                        #logger.info("{} : File {} removed successfully.".format(logger_name, dot_file_path))
+                    except Exception as e:
+                        print(f"Error accessing {dot_file_path}: {e}")
+                else:
+                    print(f"Access denied: {dot_file_path}")
 
 
 def zip_extractor(base_path,file, extract_path=None, delete_zip=False):
@@ -87,8 +114,16 @@ def zip_extractor(base_path,file, extract_path=None, delete_zip=False):
         with ZipFile(file, 'r') as zf:
             # Filter out unwanted files and folders
             file_list = [f.filename for f in zf.infolist() if not f.filename.startswith('.')]
-            # Extract the remaining files
-            zf.extractall(extract_path, members=file_list)
+
+            if is_safe_path(base_path, extract_path):
+                try:
+                    # Extract the remaining files
+                    zf.extractall(extract_path, members=file_list)
+                    # Process files or directories further here
+                except Exception as e:
+                    print(f"Error accessing {extract_path}: {e}")
+            else:
+                print(f"Access denied: {extract_path}")
         #logger.info("{} - {} Extracted successfully".format(logger_name, file))
         if delete_zip:  
             full_target_dir = os.path.normpath(os.path.join(base_path, file))
