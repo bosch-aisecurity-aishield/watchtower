@@ -54,9 +54,7 @@ def list_files(base_path: str, target_path: str, extensions: list):
 
 
 def remove_directories_with_hidden_files(base_path,root_path):
-    root_path = os.path.normpath(root_path)
-
-    base_path = os.path.normpath(base_path)
+    """Recursively remove directories containing only files starting with a dot."""
     
     full_target_dir = os.path.normpath(os.path.join(base_path, root_path))
     if not os.path.abspath(full_target_dir).startswith(os.path.abspath(base_path)):
@@ -65,10 +63,13 @@ def remove_directories_with_hidden_files(base_path,root_path):
     for root, dirs, files in os.walk(root_path, topdown=False):
         for directory in dirs:
             dir_path = os.path.join(root, directory)
-            if not root_path.startswith(base_path):
+            if is_safe_path(base_path, dir_path):
+                try:
                     dir_files = os.listdir(dir_path)
+                except Exception as e:
+                    print(f"Error accessing {dir_path}: {e}")
             else:
-                print(f"Access denied path is outside base path: {dir_path}")
+                print(f"Access denied: {dir_path}")
 
             # Check if all files in the directory start with a dot
             if all(file.startswith('.') for file in dir_files):
