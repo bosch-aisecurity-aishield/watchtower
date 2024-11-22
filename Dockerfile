@@ -1,5 +1,5 @@
 # -- base image ---
-FROM python:3.11 as base
+FROM python:3.10.13 as base
 WORKDIR /app
 
 # -- Dependencies ---
@@ -18,7 +18,7 @@ FROM dependencies as build
 COPY src /app
 
 # --- Release with Alpine ----
-FROM python:3.11 as Release
+FROM python:3.10.13 as Release
 WORKDIR /app
 
 COPY --from=dependencies /app/requirements.txt ./
