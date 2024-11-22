@@ -1,6 +1,5 @@
 import os
 import shutil
-import requests
 from zipfile import ZipFile, BadZipFile
 
 def list_files(base_path: str, target_path: str, extensions: list):
@@ -102,12 +101,4 @@ def zip_extractor(base_path,file, extract_path=None, delete_zip=False):
         print(f"Error extracting {file}: {e}")
         #logger.error("{} : Error extracting {}: {}".format(logger_name, file, e))
     
-
-
-
-
-
-
-
-
 
