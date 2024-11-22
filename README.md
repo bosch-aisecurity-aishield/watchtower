@@ -289,6 +289,7 @@ Supported Model Formats:
 1. Limited support for scanning of .pb file from s3 buckets.
 2. Presidio analyser has a max length limit of upto 1000000 (1GB). Any data greater than 1GB will not be captured in reports.  
 3. Possible mismatch in severity levels from Whispers library and Watchtower severity levels.
+4. Local: File/Folder upload in Docker UI is not supported.
 
 ### Upcoming Features
 
