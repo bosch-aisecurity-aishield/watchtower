@@ -58,7 +58,9 @@ def trigger_workflow(repo_type, repo_url, s3_bucket_name, aws_secret_access_key,
                                                          path=path,
                                                          branch_name=branch_name,
                                                          depth=depth,
-                                                         scanning_id=scanning_id)
+                                                         scanning_id=scanning_id,
+                                                         pass_scan_tf_models=True)
+    # Default call for orchestrator as True
     return report_path, scanning_status
 
 
