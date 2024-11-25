@@ -1,5 +1,8 @@
 ![Project Banner or Logo](./img/WatchtowerGithubImage.jpg)
 
+![Static Badge](https://img.shields.io/badge/Build-Passing-green) ![Static Badge](https://img.shields.io/badge/Docker-Available-green) ![GitHub Release](https://img.shields.io/github/v/release/bosch-aisecurity-aishield/watchtower)
+![Static Badge](https://img.shields.io/badge/python-3.10%7C3.11%7C3.12%7C3.13-blue) ![GitHub License](https://img.shields.io/github/license/bosch-aisecurity-aishield/watchtower)
+
 # AIShield.Watchtower 🔍: Fortifying AI/ML Model and Notebook Security
 
 In today's rapidly advancing landscape of machine learning and artificial intelligence (AI), ensuring the security of AI
@@ -48,14 +51,12 @@ AIShield Watchtower can be used to inspect vulnerabilities in Jupyter notebooks,
 
 For using AIShield Watchtower, clone Watchtower repo. Install prerequisites and scan your notebooks and AI/ML models. Some starting sample test files are available within the Watchtower repo.
 
----
-
 ### Prerequisites
 
 - For  running Watchtower in CLI or UI version, python3 and pip should be installed in the host system.
 - For running UI-Docker version, docker and docker-compose should be installed in the host system.
 > ⚠️ **Warning:** 
-> As a security precaution when using the webapp or the Docker version, it is recommended to scan unknown/untrusted artifacts in a an isolated network / isoldated Docker container.
+> As a security precaution when using the webapp or the Docker version, it is recommended to scan unknown/untrusted artifacts in a an isolated sandbox environment (network/docker/compute etc).
 
 Cloning Watchtower repo
 
@@ -74,9 +75,6 @@ cd watchtower
 ```powershell
 ./install.bat
 ```
-
----
-
 ### Inspect Jupyter Notebooks and ML/DL Models 
 
 Change directory to src.
@@ -134,13 +132,13 @@ python watchtower.py --repo_type=folder --path=<Enter path of Folder>
 
 ![Watchtower CLI](./img/AIShield_watchtower_git_cli.gif)
 
----
+
 ## UI
 For using Watchtower UI, execute the following command:
 ```python
 python watchtower_webapp.py
 ```
----
+
 ![Watchtower UI](./img/AIShield_watchtower_ui.png)
 
 ## UI-Docker
@@ -161,8 +159,6 @@ For stopping and removing Watchtower image execute following
 ```python
 docker-compose down
 ```
----
-
 ## Reports
 
 On successful completion of the Watchtower scan, three reports will be generated in the following path :
@@ -225,10 +221,12 @@ On successful completion of the Watchtower scan, three reports will be generated
 
 - **Model and Notebook Detection**: Automatically recognizes AI/ML models and Notebooks within a provided repository. 
 - **Scanning**:Executes thorough scans of the models and notebooks to detect potential safety and security concerns.
+-  **Report Generation**: Produces comprehensive reports that classify the scanned files containing "low," "medium,", "high" and "critical" risk.
+- **Supported Repositories** : AIShield Watchtower supports integration with GitHub, Huggingface and AWS S3 buckets, allowing for automated scanning of repositories and AWS S3 buckets to identify potential risks.
 
-Supported Model Formats: 
+### Supported Model Formats
 
-| Framework         | File Format      | Deserialization       | Backdoor Attacks       | Runtime Threats       |
+| Framework         | File Format      | Deserialization Risks       | Backdoor Risks       | Runtime Risks       |
 |-------------------|------------------|------------------------|-------------------------|------------------------|
 | [Tensorflow](https://www.tensorflow.org/tutorials/keras/save_and_load#save_the_entire_model) | .pb       | ✅               | ✅                        |                        |
 | [Tensorflow](https://www.tensorflow.org/tutorials/keras/save_and_load#save_the_entire_model) | .h5       | ✅               |  ✅                       |                        |
@@ -244,11 +242,36 @@ Supported Model Formats:
 | Misc | .zip      | ✅               |                         |                        |
 *For more details on these file formats, please write to [AIShield.Contact@in.bosch.com](mailto:AIShield.Contact@in.bosch.com).
 
-- **Report Generation**: Produces comprehensive reports that classify the scanned files containing "low," "medium,", "high" and "critical" risk.
-- **Supported Repositories** : AIShield Watchtower supports integration with GitHub, Huggingface and AWS S3 buckets, allowing for automated scanning of repositories and AWS S3 buckets to identify potential risks.
+### Additional File Formats
 
+| Framework        | File Format | Detections                                               |
+| :--------------- | :---------- | :------------------------------------------------------- |
+| Jupyter Notebook | .ipynb      | Hardcoded secrets,Passwords PII, Tokens(API, Web, other) |
+| Python           | .py         | Hardcoded secrets,Passwords PII, Tokens(API, Web, other) |
 
----
+### AI Software Bill of Materials (SBOM)
+
+| File Format                        | Detections                      |
+| :--------------------------------- | :------------------------------ |
+| Requirements File (Autodiscovered) | Libraries, Unsafe Library Flags |
+| Jupyter Notebook (Autodiscovered)  | Libraries, Unsafe Library Flags |
+
+***
+
+## Risk Analysis
+
+### 1. Deserialization Risks
+
+Occurs when unverified data is used to rebuild objects. Attackers may exploit these to introduce malicious code, compromising system integrity.
+
+### 2. Backdoor Risks
+
+Hidden pathways allow attackers to manipulate model behavior through specific triggers. These covert exploits remain undetected during normal operations.
+
+### 3. Runtime Risks
+
+Activated during model inference or task execution, runtime risks involve malicious code execution, leading to unauthorized access or manipulation.
+
 
 ## Benefits
 
@@ -282,8 +305,6 @@ Supported Model Formats:
    wide range of risks, from model tampering to unauthorized data access. This comprehensive assessment ensures a
    thorough examination of all possible vulnerabilities, leaving no stone unturned in safeguarding AI/ML assets.
 
----
-
 ## Limitation
 
 1. Limited support for scanning of .pb file from s3 buckets.
@@ -303,8 +324,6 @@ Supported Model Formats:
 1. Repositories cloned from GitHub and Hugging Face during watchtower analysis are not automatically removed
    post-analysis. It is advisable to manually delete these folders found within the 'src' directory.
 
----
-
 ## Contribution
 
 Contributions are always welcome! See the [Contribution Guidelines](CONTRIBUTE.md) for more details.
@@ -321,8 +340,6 @@ Contributions are always welcome! See the [Contribution Guidelines](CONTRIBUTE.m
 10. [Manpreet Singh](https://www.linkedin.com/in/manpreet-singh-36901a19/)
 11. [Shankar Ajmeera](https://www.linkedin.com/in/shankar-ajmeera-00b22522a/)
 12. [Aravindh J](https://www.linkedin.com/in/aravindhj6/)
-
----
 
 ## License
 
@@ -361,4 +378,5 @@ First and foremost, we want to extend our deepest gratitude to the vibrant open-
 ... and to many others who have contributed their knowledge on open-source licenses, API key security, MLOps pipeline security, and more.
 
 In creating AI Watchtower, it's our humble attempt to give back to this incredible community. We're inspired by the spirit of collaboration and are thrilled to contribute our grain of sand to the vast desert of open-source knowledge. Together, let's continue to make the AI landscape safer and more robust for all!
+
 
