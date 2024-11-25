@@ -1,6 +1,7 @@
 ![Project Banner or Logo](./img/WatchtowerGithubImage.jpg)
 
 ![Static Badge](https://img.shields.io/badge/Build-Passing-green) ![Static Badge](https://img.shields.io/badge/Docker-Available-green) ![GitHub Release](https://img.shields.io/github/v/release/bosch-aisecurity-aishield/watchtower)
+
 ![Static Badge](https://img.shields.io/badge/python-3.10%7C3.11%7C3.12%7C3.13-blue) ![GitHub License](https://img.shields.io/github/license/bosch-aisecurity-aishield/watchtower)
 
 # AIShield.Watchtower 🔍: Fortifying AI/ML Model and Notebook Security
@@ -248,15 +249,6 @@ On successful completion of the Watchtower scan, three reports will be generated
 | :--------------- | :---------- | :------------------------------------------------------- |
 | Jupyter Notebook | .ipynb      | Hardcoded secrets,Passwords PII, Tokens(API, Web, other) |
 | Python           | .py         | Hardcoded secrets,Passwords PII, Tokens(API, Web, other) |
-
-### AI Software Bill of Materials (SBOM)
-
-| File Format                        | Detections                      |
-| :--------------------------------- | :------------------------------ |
-| Requirements File (Autodiscovered) | Libraries, Unsafe Library Flags |
-| Jupyter Notebook (Autodiscovered)  | Libraries, Unsafe Library Flags |
-
-***
 
 ## Risk Analysis
 
