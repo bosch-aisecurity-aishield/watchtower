@@ -55,7 +55,7 @@ For using AIShield Watchtower, clone Watchtower repo. Install prerequisites and 
 - For  running Watchtower in CLI or UI version, python3 and pip should be installed in the host system.
 - For running UI-Docker version, docker and docker-compose should be installed in the host system.
 > ⚠️ **Warning:** 
-> As a security precaution when using the webapp or the Docker version, it is recommended to scan unknown/untrusted artifacts in a networkless Docker container on the host machine.
+> As a security precaution when using the webapp or the Docker version, it is recommended to scan unknown/untrusted artifacts in a an isolated network / isoldated Docker container.
 
 Cloning Watchtower repo
 
@@ -141,7 +141,7 @@ For using Watchtower UI, execute the following command:
 python watchtower_webapp.py
 ```
 ---
-![Watchtower UI](./img/AIShield_watchtower_UI.png)
+![Watchtower UI](./img/AIShield_watchtower_ui.png)
 
 ## UI-Docker
 
