@@ -402,34 +402,36 @@ def safety_output_parser(output: str):
       critical issues. So all Safety relates vulnerabilities found consider as High"""
 
     vulnerability_severity_map = dict()  # Initialize an empty dictionary for scanning results
-    vulnerability_severity = ""
+
     try:
         if isinstance(output, str):
-            output_log = eval(output) if len(output) >= 2 else {}
+            output = eval(output) if len(output) >= 2 else {}
 
         if 'scanned_packages' in output.keys():
-            for key, value in output_log["scanned_packages"].items():
+            for key, value in output["scanned_packages"].items():
                 version = "" if value['version'] is None else value['version']
                 if key in output["affected_packages"].keys():
                     insecure_versions = output["affected_packages"][key]["insecure_versions"]
 
                     if version in insecure_versions:
-                        # update to higher vulnerability score when lower found
-                        if vulnerability_severity in ["", "Medium"]:
-                            vulnerability_severity = "High"
                         output['scanned_packages'][key]['package_vulnerability_severity'] = "High"
 
                     else:
-                        if vulnerability_severity not in ['High', 'Medium']:
-                            vulnerability_severity = 'Medium'
                         output['scanned_packages'][key]['package_vulnerability_severity'] = "Medium"
 
                 else:
-                    print("Affected package not detected.")
+                    output['scanned_packages'][key]['package_vulnerability_severity'] = ""
+                    print("Affected package not detected for {}.".format(key))
 
             vulnerability_severity_map["High"] = len(output["affected_packages"])
-            output['scanned_packages']['vulnerability_severity'] = vulnerability_severity
 
+            vulnerability_severity_list = [
+                output["scanned_packages"][key]['package_vulnerability_severity'] if 'package_vulnerability_severity' in
+                                                                                     output["scanned_packages"][
+                                                                                         key].keys() else "" for key in
+                output["scanned_packages"].keys()]
+            vulnerability_severity = 'High' if 'High' in vulnerability_severity_list else 'Medium' if 'Medium' in vulnerability_severity_list else ""
+            output['scanned_packages']['vulnerability_severity'] = vulnerability_severity
     except Exception as e:
         print("Failed to parse safety_output {}".format(e))
 
