@@ -1,6 +1,6 @@
 flask==3.0.2
 waitress==3.0.1
-jupyterlab==4.2.5
+jupyterlab==4.4.8
 safety==3.2.8
 detect-secrets==1.5.0
 presidio-analyzer==2.2.355
