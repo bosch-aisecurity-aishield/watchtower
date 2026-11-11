@@ -4,6 +4,8 @@
 
 ![Static Badge](https://img.shields.io/badge/python-3.10%7C3.11%7C3.12%7C3.13-blue) ![GitHub License](https://img.shields.io/github/license/bosch-aisecurity-aishield/watchtower)
 
+This branch was developed within the COBALT project and received funding from the European Union’s Horizon Europe research and innovation programme under grant agreement No.101119602.
+
 # AIShield.Watchtower 🔍: Fortifying AI/ML Model and Notebook Security
 
 In today's rapidly advancing landscape of machine learning and artificial intelligence (AI), ensuring the security of AI
